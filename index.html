@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocMate AI – Government Document Checklist Assistant</title>
+  <meta name="description" content="An AI-assisted document checklist system helping citizens understand what documents they need before visiting government and e-Seva offices. Tamil & English support.">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons with offline fallback -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (typeof window.lucide === 'undefined') {
+      window.lucide = {
+        createIcons: function() {
+          var icons = {
+            'check': '✓', 'check-circle-2': '✓', 'shield-alert': '⚠', 'shield-check': '🛡',
+            'file-check-2': '📋', 'languages': '🌐', 'sparkles': '✨', 'arrow-right': '→',
+            'arrow-left': '←', 'bot': '🤖', 'layers': '📑', 'clock-arrow-down': '⏱',
+            'clock': '🕒', 'search': '🔍', 'search-x': '❌', 'printer': '🖨', 'download': '📥',
+            'rotate-ccw': '↺', 'copy': '📄', 'send': '➤', 'info': 'ℹ', 'chevron-right': '›',
+            'chevron-down': '˅', 'minus-circle': '—', 'menu': '☰', 'file-badge-2': '📄',
+            'baby': '👶', 'badge': '🎖', 'currency': '₹', 'home': '🏠', 'file-text': '📄',
+            'academic-cap': '🎓', 'users': '👥', 'truck': '🚗', 'shopping-bag': '🛍',
+            'map-pin': '📍', 'user': '👤', 'building': '🏢', 'zap': '⚡', 'alert-circle': '⚠',
+            'cpu': '⚙', 'trending-up': '📈'
+          };
+          document.querySelectorAll('i[data-lucide]').forEach(function(el) {
+            var name = el.getAttribute('data-lucide');
+            if (icons[name]) {
+              el.textContent = icons[name];
+              el.style.fontStyle = 'normal';
+              el.style.display = 'inline-flex';
+              el.style.alignItems = 'center';
+              el.style.justifyContent = 'center';
+            }
+          });
+        }
+      };
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Printable Header (Only appears on printed output) -->
+  <div class="print-only-header">
+    <h2>DocMate AI – Government Document Preparation Checklist</h2>
+    <p>Educational Prototype Checklist • Verified for Citizen Office Preparation</p>
+    <p><small>Always verify final jurisdiction requirements with the local Tahsildar / e-Seva Office.</small></p>
+  </div>
+
+  <!-- Educational Prototype Notice Top Banner -->
+  <header class="disclaimer-banner" role="region" aria-label="Prototype Disclaimer">
+    <div class="disclaimer-content">
+      <div class="disclaimer-badge">
+        <i data-lucide="shield-alert" style="width:14px;height:14px;"></i>
+        <span data-i18n="prototype_badge">Student AI Immersion Project Prototype</span>
+      </div>
+      <div class="disclaimer-text" data-i18n="disclaimer_short">
+        Notice: Educational prototype. Document requirements can vary by jurisdiction. Always verify final requirements with official government portals or your local Taluk / e-Seva office.
+      </div>
+    </div>
+  </header>
+
+  <!-- Sticky Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="nav-container">
+      <div class="brand-logo" id="nav-brand-btn" role="button" tabindex="0">
+        <div class="brand-icon">
+          <i data-lucide="file-check-2"></i>
+        </div>
+        <div>
+          <div class="brand-title" data-i18n="app_title">DocMate AI</div>
+          <div class="brand-tagline" data-i18n="app_tagline">Government Document Checklist Assistant</div>
+        </div>
+      </div>
+
+      <ul class="nav-links" id="desktop-nav-links">
+        <li><a href="#home" class="nav-link active" data-page="home" data-i18n="nav_home">Home</a></li>
+        <li><a href="#services" class="nav-link" data-page="services" data-i18n="nav_services">Services</a></li>
+        <li><a href="#checklist" class="nav-link" data-page="checklist" data-i18n="nav_checklist">My Checklist</a></li>
+        <li><a href="#assistant" class="nav-link" data-page="assistant" data-i18n="nav_assistant">DocMate Assistant</a></li>
+        <li><a href="#faq" class="nav-link" data-page="faq" data-i18n="nav_faq">FAQ</a></li>
+        <li><a href="#about" class="nav-link" data-page="about" data-i18n="nav_about">About Project</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Language Switcher Toggle -->
+        <button class="lang-toggle-btn" id="lang-toggle" aria-label="Switch Language between English and Tamil">
+          <i data-lucide="languages" style="width:16px;height:16px;"></i>
+          <span id="lang-label-en" class="lang-active">English</span>
+          <span>|</span>
+          <span id="lang-label-ta">தமிழ்</span>
+        </button>
+
+        <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Viewports -->
+  <main class="main-content">
+
+    <!-- VIEW 1: HOME -->
+    <section id="view-home" class="app-view">
+      <div class="hero-section">
+        <div class="hero-content">
+          <div class="hero-pill">
+            <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+            <span>AI Immersion Prototype • Civic Tech for Citizens</span>
+          </div>
+
+          <h1 class="hero-title">
+            <span data-i18n="hero_title">Never Visit a Government Office Unprepared.</span>
+          </h1>
+
+          <p class="hero-subtitle" data-i18n="hero_subtitle">
+            An AI-assisted document checklist system designed to eliminate repeat visits, missing paperwork, and confusion at government and e-Seva centers.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn-primary" id="hero-find-docs-btn">
+              <span data-i18n="hero_cta">Find Required Documents</span>
+              <i data-lucide="arrow-right"></i>
+            </button>
+            <button class="btn-secondary" id="hero-open-chat-btn">
+              <i data-lucide="bot"></i>
+              <span data-i18n="hero_cta_chat">Ask AI Assistant</span>
+            </button>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-item">
+              <div class="stat-icon"><i data-lucide="layers"></i></div>
+              <div class="stat-label" data-i18n="hero_stat_services">10+ Common Services</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i data-lucide="clock-arrow-down"></i></div>
+              <div class="stat-label" data-i18n="hero_stat_reduction">60% Fewer Re-Visits</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i data-lucide="languages"></i></div>
+              <div class="stat-label" data-i18n="hero_stat_languages">Tamil & English</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i data-lucide="shield-check"></i></div>
+              <div class="stat-label" data-i18n="hero_stat_security">Zero PII Stored</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Interactive Preview Card -->
+        <div class="hero-visual">
+          <div class="preview-card-header">
+            <div>
+              <strong style="font-size: 1.1rem; display:block;">Community Certificate</strong>
+              <small style="color:var(--neutral-500);">Tahsildar / Arasu e-Seva</small>
+            </div>
+            <span class="preview-chip">Demo Readiness: 80%</span>
+          </div>
+
+          <div class="preview-checklist-item">
+            <div class="check-icon-circle">✓</div>
+            <div>
+              <strong>Applicant School Transfer Certificate (TC)</strong>
+              <div style="font-size: 0.8rem; color:var(--neutral-500);">Self-Attested Photocopy • Shows caste entry</div>
+            </div>
+          </div>
+
+          <div class="preview-checklist-item">
+            <div class="check-icon-circle">✓</div>
+            <div>
+              <strong>Father's Community Certificate</strong>
+              <div style="font-size: 0.8rem; color:var(--neutral-500);">Original + 1 Copy • Lineage verification</div>
+            </div>
+          </div>
+
+          <div class="preview-checklist-item">
+            <div class="check-icon-circle">✓</div>
+            <div>
+              <strong>Family Smart Ration Card</strong>
+              <div style="font-size: 0.8rem; color:var(--neutral-500);">Address & VAO jurisdiction proof</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px; background: rgba(37,99,235,0.06); padding: 12px; border-radius: var(--radius-md); font-size: 0.85rem; color: var(--primary); display:flex; align-items:center; gap:8px;">
+            <i data-lucide="info" style="width:18px;height:18px;flex-shrink:0;"></i>
+            <span>Instant customized checklists based on state, district, and applicant relationship!</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: SELECT GOVERNMENT SERVICE -->
+    <section id="view-services" class="app-view" style="display:none;">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="step1_title">1. Select Government Service</h2>
+        <p class="section-subtitle">Choose the civil, welfare, revenue, or certificate service you need assistance with.</p>
+      </div>
+
+      <!-- Search & Category Filters -->
+      <div class="search-filter-bar">
+        <div class="search-input-wrap">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="service-search-input" class="search-input" placeholder="Search for a service (e.g. Birth Certificate, Income, Community, Ration Card)..." data-i18n-attr="placeholder:search_placeholder">
+        </div>
+        <div class="category-pills">
+          <button class="category-pill active" data-cat="all" data-i18n="search_all_category">All Categories</button>
+          <button class="category-pill" data-cat="certificates" data-i18n="cat_certificates">Certificates & Civil</button>
+          <button class="category-pill" data-cat="revenue" data-i18n="cat_revenue">Revenue & Domicile</button>
+          <button class="category-pill" data-cat="transport" data-i18n="cat_transport">Transport & Driving</button>
+          <button class="category-pill" data-cat="welfare" data-i18n="cat_welfare">Civil Supplies & Ration</button>
+        </div>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="services-grid" id="services-grid-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: QUESTIONNAIRE (PERSONAL DETAILS & CONTEXT) -->
+    <section id="view-questionnaire" class="app-view" style="display:none;">
+      <div class="step-wizard-bar">
+        <div class="wizard-step">
+          <span class="wizard-step-num">1</span>
+          <span data-i18n="step1_title">Select Service</span>
+        </div>
+        <i data-lucide="chevron-right" style="color:var(--neutral-400);"></i>
+        <div class="wizard-step active">
+          <span class="wizard-step-num">2</span>
+          <span data-i18n="step2_title">Context & Situation</span>
+        </div>
+        <i data-lucide="chevron-right" style="color:var(--neutral-400);"></i>
+        <div class="wizard-step">
+          <span class="wizard-step-num">3</span>
+          <span data-i18n="step3_title">Personalized Checklist</span>
+        </div>
+      </div>
+
+      <div class="questionnaire-container">
+        <h2 class="section-title" style="font-size:1.6rem;" data-i18n="form_heading">Tell us a few details to customize your checklist</h2>
+        <p class="section-subtitle" style="margin-bottom:24px;" data-i18n="form_subheading">
+          Your responses help us determine exact supporting documents. We never ask for or store sensitive information like Aadhaar or bank numbers.
+        </p>
+
+        <form id="checklist-context-form">
+          <div class="form-group">
+            <label class="form-label" data-i18n="label_service">Selected Service</label>
+            <select id="form-service-select" class="form-select" required>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" data-i18n="label_state">State</label>
+              <select id="form-state-select" class="form-select" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="label_district">District</label>
+              <select id="form-district-select" class="form-select" required>
+                <!-- Populated based on state -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="label_applicant">Who is this application for?</label>
+            <div class="radio-group-cards">
+              <label class="radio-card selected">
+                <input type="radio" name="applicant_relation" value="self" checked>
+                <span data-i18n="applicant_self">For Myself</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="applicant_relation" value="minor">
+                <span data-i18n="applicant_minor">For My Minor Child (Under 18)</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="applicant_relation" value="parent">
+                <span data-i18n="applicant_parent">For My Parent / Elderly Dependent</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="applicant_relation" value="deceased">
+                <span data-i18n="applicant_deceased">For Deceased Family Member</span>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="applicant_relation" value="spouse">
+                <span data-i18n="applicant_spouse">For My Spouse</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" data-i18n="label_mode">How do you plan to apply?</label>
+              <select id="form-mode-select" class="form-select">
+                <option value="eseva" data-i18n="mode_eseva">Arasu e-Seva / CSC Center (Recommended)</option>
+                <option value="online" data-i18n="mode_online">Direct Online Portal (TNeGA / State Portal)</option>
+                <option value="office" data-i18n="mode_office">Direct Taluk / Municipality Office</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="label_urgency">Application Urgency / Situation</label>
+              <select id="form-urgency-select" class="form-select">
+                <option value="normal" data-i18n="urgency_normal">Standard Application</option>
+                <option value="urgent" data-i18n="urgency_urgent">Urgent / Tatkal Requirement (Admission / Deadline)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="label_residence_type">Residential Ownership Status</label>
+            <select id="form-residence-type" class="form-select">
+              <option value="own" data-i18n="residence_own">Living in Own House / Ancestral Property</option>
+              <option value="rent" data-i18n="residence_rent">Living in Rented House (Needs Rental Agreement)</option>
+            </select>
+          </div>
+
+          <div class="form-privacy-note">
+            <i data-lucide="shield-check" style="color:var(--emerald); width:20px;height:20px;flex-shrink:0;"></i>
+            <span>Privacy Note: No Aadhaar number, passwords, or personal identifying records are collected. All inputs stay on your browser.</span>
+          </div>
+
+          <div class="form-action-buttons">
+            <button type="button" class="btn-secondary" id="form-back-btn">
+              <i data-lucide="arrow-left"></i>
+              <span data-i18n="btn_back_to_services">Back to Services</span>
+            </button>
+            <button type="submit" class="btn-primary" id="form-submit-btn">
+              <span data-i18n="btn_generate_checklist">Generate Personalized Checklist</span>
+              <i data-lucide="sparkles"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 4: AI GENERATED CHECKLIST & READINESS -->
+    <section id="view-checklist" class="app-view" style="display:none;">
+      
+      <!-- Top Service Header & Readiness Meter -->
+      <div class="checklist-header-card">
+        <div>
+          <div class="preview-chip" id="checklist-category-badge">Certificate Service</div>
+          <h2 class="section-title" id="checklist-service-name" style="margin-top:8px;">Birth Certificate</h2>
+          <p id="checklist-service-desc" style="color:var(--neutral-600); font-size:0.95rem;">Official civil record issued by the Registrar of Births and Deaths.</p>
+          
+          <div class="selected-service-meta" id="checklist-user-context-tags">
+            <!-- Badges for State, District, Self/Minor, etc. -->
+          </div>
+        </div>
+
+        <!-- Circular Readiness Meter -->
+        <div class="readiness-gauge-card">
+          <div class="gauge-circular">
+            <svg class="gauge-svg" viewBox="0 0 100 100">
+              <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
+              <circle class="gauge-progress" id="readiness-circle" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+            </svg>
+            <div class="gauge-text" id="readiness-percent-text">0%</div>
+          </div>
+          <div class="readiness-details">
+            <h4 data-i18n="readiness_score_title">Application Readiness Score</h4>
+            <p id="readiness-status-feedback">Checking your documents...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="checklist-toolbar">
+        <div class="checklist-filter-tabs">
+          <button class="filter-tab-btn active" data-filter="all" data-i18n="filter_all">All Documents</button>
+          <button class="filter-tab-btn" data-filter="have" data-i18n="filter_have">Ready (Have)</button>
+          <button class="filter-tab-btn" data-filter="need" data-i18n="filter_need">Pending (Need)</button>
+        </div>
+
+        <div class="checklist-actions">
+          <button class="btn-icon-text" id="print-checklist-btn">
+            <i data-lucide="printer"></i>
+            <span data-i18n="btn_print">Print Checklist</span>
+          </button>
+          <button class="btn-icon-text" id="download-checklist-btn">
+            <i data-lucide="download"></i>
+            <span data-i18n="btn_save">Download Checklist</span>
+          </button>
+          <button class="btn-icon-text" id="reset-checklist-btn">
+            <i data-lucide="rotate-ccw"></i>
+            <span data-i18n="btn_reset">Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Checklist Items List -->
+      <div id="checklist-items-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Section: What should I do next? -->
+      <div class="guidance-section">
+        <h3 class="section-title" style="font-size:1.5rem;" data-i18n="next_steps_heading">What should I do next?</h3>
+        <p class="section-subtitle" data-i18n="next_steps_sub">A step-by-step practical guide before stepping out of your home</p>
+        
+        <div class="next-steps-grid" id="next-steps-container">
+          <!-- Populated from NEXT_STEPS_GUIDE -->
+        </div>
+      </div>
+
+      <!-- Section: Questions to Ask at the Office -->
+      <div class="guidance-section" style="margin-top:24px;">
+        <h3 class="section-title" style="font-size:1.5rem;" data-i18n="office_questions_heading">Questions to Ask at the Office</h3>
+        <p class="section-subtitle" data-i18n="office_questions_sub">Carry these questions to prevent unexpected surprises or delays</p>
+        
+        <div class="questions-grid" id="office-questions-container">
+          <!-- Populated from COMMON_QUESTIONS_AT_OFFICE -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 5: DOCMATE AI ASSISTANT -->
+    <section id="view-assistant" class="app-view" style="display:none;">
+      <div class="ai-assistant-container">
+        <div class="ai-header">
+          <div class="ai-header-left">
+            <div class="ai-avatar">
+              <i data-lucide="bot"></i>
+            </div>
+            <div class="ai-header-info">
+              <h3 data-i18n="ai_assistant_title">DocMate Assistant</h3>
+              <p data-i18n="ai_assistant_subtitle">Your AI companion for government paperwork guidance</p>
+            </div>
+          </div>
+          <div class="disclaimer-badge">
+            <i data-lucide="shield-alert" style="width:12px;height:12px;"></i>
+            <span>Educational AI</span>
+          </div>
+        </div>
+
+        <div class="chat-history" id="chat-messages-container" role="log" aria-live="polite">
+          <!-- Initial Welcome Message -->
+          <div class="chat-bubble assistant">
+            <span data-i18n="ai_welcome_msg">Hello! I am DocMate Assistant, your guide for government document checklists. How can I assist you with your application today?</span>
+          </div>
+        </div>
+
+        <!-- Suggested Prompt Chips -->
+        <div class="ai-quick-chips-wrapper">
+          <div class="chips-title" data-i18n="ai_quick_prompts">Suggested Questions:</div>
+          <div class="chips-list" id="quick-prompt-chips">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Chat Input Field -->
+        <form class="chat-input-area" id="chat-form">
+          <input type="text" id="chat-user-input" class="chat-input" placeholder="Ask in English or தமிழ் (e.g. 'What if I don't have a ration card?')..." data-i18n-attr="placeholder:ai_input_placeholder" autocomplete="off" required>
+          <button type="submit" class="chat-send-btn" id="chat-submit-btn">
+            <span data-i18n="ai_send_btn">Send</span>
+            <i data-lucide="send" style="width:16px;height:16px;"></i>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 6: FAQ -->
+    <section id="view-faq" class="app-view" style="display:none;">
+      <div class="section-header" style="text-align:center;">
+        <h2 class="section-title" data-i18n="faq_title">Frequently Asked Questions</h2>
+        <p class="section-subtitle" data-i18n="faq_subtitle">Everything you need to know about preparing government applications</p>
+      </div>
+
+      <div class="faq-container" id="faq-accordion-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- VIEW 7: ABOUT THE PROJECT -->
+    <section id="view-about" class="app-view" style="display:none;">
+      <div class="about-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h2 class="section-title" data-i18n="about_title">About DocMate AI</h2>
+            <p style="color:var(--neutral-600); max-width:680px;" data-i18n="about_intro">
+              DocMate AI is an educational prototype developed as part of an AI Immersion Project to empower citizens with automated, customized document preparation checklists.
+            </p>
+          </div>
+          <span class="disclaimer-badge" style="font-size:0.85rem; padding:4px 12px;" data-i18n="about_badge">College / School AI Immersion Project</span>
+        </div>
+
+        <div class="about-grid-2">
+          <div class="about-feature-box">
+            <h3 data-i18n="problem_title">
+              <i data-lucide="alert-circle" style="color:var(--rose);"></i>
+              The Problem
+            </h3>
+            <p data-i18n="problem_desc">
+              Every day, millions of citizens visit government administrative offices (such as Taluk offices, Municipalities, e-Seva centers, and RTOs) only to be turned away because they lacked a specific photocopy, self-attestation, or local proof. This results in lost daily wages, travel costs, frustration, and overburdened desk officers.
+            </p>
+          </div>
+
+          <div class="about-feature-box">
+            <h3 data-i18n="solution_title">
+              <i data-lucide="cpu" style="color:var(--primary);"></i>
+              The AI Solution
+            </h3>
+            <p data-i18n="solution_desc">
+              DocMate AI applies an intelligent decision system combined with conversational AI to understand user context (relationship, locality, urgent requirements) and produce an itemized, verified checklist with practical guidance on formats, official fees, and questions to ask.
+            </p>
+          </div>
+        </div>
+
+        <div class="about-feature-box" style="margin-top:24px;">
+          <h3 data-i18n="benefits_title">
+            <i data-lucide="trending-up" style="color:var(--emerald);"></i>
+            Expected Citizen Benefits
+          </h3>
+          <ul class="benefits-list">
+            <li>
+              <i data-lucide="check" style="color:var(--emerald); width:18px;height:18px;"></i>
+              <span data-i18n="benefits_item1">Reduces repetitive office visits by up to 60%.</span>
+            </li>
+            <li>
+              <i data-lucide="check" style="color:var(--emerald); width:18px;height:18px;"></i>
+              <span data-i18n="benefits_item2">Empowers rural and urban citizens with transparent knowledge of fees and timeframes.</span>
+            </li>
+            <li>
+              <i data-lucide="check" style="color:var(--emerald); width:18px;height:18px;"></i>
+              <span data-i18n="benefits_item3">Eliminates middleman dependencies and confusion regarding self-attestation vs originals.</span>
+            </li>
+            <li>
+              <i data-lucide="check" style="color:var(--emerald); width:18px;height:18px;"></i>
+              <span data-i18n="benefits_item4">Accessible bilingual interface supporting Tamil & English.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="form-privacy-note" style="margin-top:24px;">
+          <i data-lucide="shield-check" style="color:var(--emerald); width:24px;height:24px;flex-shrink:0;"></i>
+          <div>
+            <strong data-i18n="safety_title">Safety, Accuracy & Zero-PII Policy</strong>
+            <p style="margin-top:4px;" data-i18n="safety_desc">
+              DocMate AI never asks for or stores sensitive personal data such as Aadhaar numbers, PAN, bank accounts, or passwords. All selections remain on your device. Always cross-check with official portals such as tnega.tn.gov.in, edistrict, or parivahan.gov.in.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating AI Assistant Chat Launcher -->
+  <button class="floating-chat-trigger" id="floating-chat-btn" aria-label="Open DocMate AI Assistant">
+    <i data-lucide="bot"></i>
+    <span>DocMate AI</span>
+  </button>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <p data-i18n="footer_text">
+        DocMate AI — Student AI Immersion Prototype. Not affiliated with any official government agency. Always confirm with the relevant government department.
+      </p>
+      <p style="margin-top:6px; font-size:0.75rem; color:var(--neutral-400);">
+        Built with HTML5, Vanilla CSS & Modern ES6 • Supporting Tamil (தமிழ்) & English
+      </p>
+    </div>
+  </footer>
+
+  <!-- Core Application Scripts (Works on both file:// and http://) -->
+  <script src="js/app.js"></script>
+</body>
+</html>

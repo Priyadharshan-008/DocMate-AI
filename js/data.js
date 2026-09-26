@@ -1,0 +1,897 @@
+// Data file for DocMate AI
+// Sample educational prototype data for Indian Government Services (focusing on State/e-Seva services like Tamil Nadu, Karnataka, etc.)
+
+export const SERVICES_DATA = [
+  {
+    id: "birth-certificate",
+    category: "certificates",
+    name_en: "Birth Certificate",
+    name_ta: "பிறப்புச் சான்றிதழ்",
+    desc_en: "Official record of a person's birth issued by Corporation / Municipality / Village Panchayat.",
+    desc_ta: "மாநகராட்சி, நகராட்சி அல்லது கிராம பஞ்சாயத்தால் வழங்கப்படும் அதிகாரப்பூர்வ பிறப்பு பதிவு ஆவணம்.",
+    issuing_authority_en: "Corporation / Municipality / Revenue Dept",
+    issuing_authority_ta: "மாநகராட்சி / நகராட்சி / வருவாய்த்துறை",
+    standard_fee: "₹60 (e-Seva service charge)",
+    processing_days: "7 - 15 Working Days",
+    icon: "baby",
+    documents: [
+      {
+        id: "doc-bc-1",
+        name_en: "Hospital Birth Discharge Summary / Form 1",
+        name_ta: "மருத்துவமனை பிறப்பு அறிக்கை / படிவம் 1",
+        category: "primary_proof",
+        reason_en: "Proves date, time, sex, and place of child birth as reported by the medical institution.",
+        reason_ta: "மருத்துவமனையில் குழந்தை பிறந்த தேதி, நேரம், பாலினம் மற்றும் இடத்தை நிரூபிக்கிறது.",
+        format: "original_and_copy",
+        format_label_en: "Original + 1 Photocopy",
+        format_label_ta: "அசல் + 1 நகல்",
+        note_en: "Must be signed/stamped by the hospital medical officer with registration number.",
+        note_ta: "மருத்துவ அதிகாரியின் கையொப்பம் மற்றும் முத்திரை இருக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-bc-2",
+        name_en: "Parents' Aadhaar Cards",
+        name_ta: "பெற்றோரின் ஆதார் அட்டைகள்",
+        category: "identity_proof",
+        reason_en: "Verifies the identity, nationality, and parental relationship of both parents.",
+        reason_ta: "தாய், தந்தை இருவரின் அடையாளம் மற்றும் பெற்றோர் உரிமையை சரிபார்க்கிறது.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Photocopy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Carry original Aadhaar cards for spot inspection at the e-Seva or Registrar desk.",
+        note_ta: "சரிபார்ப்பிற்காக அசல் ஆதாரை உடன் எடுத்துச் செல்லவும்.",
+        essential: true
+      },
+      {
+        id: "doc-bc-3",
+        name_en: "Parents' Marriage Certificate / Ration Card",
+        name_ta: "பெற்றோர் திருமணச் சான்றிதழ் / குடும்ப அட்டை",
+        category: "relationship_proof",
+        reason_en: "Validates marital status of parents and confirms family household listing.",
+        reason_ta: "பெற்றோரின் திருமண உறுதி மற்றும் குடும்ப சேர்க்கையை உறுதி செய்ய.",
+        format: "photocopy",
+        format_label_en: "1 Photocopy",
+        format_label_ta: "1 நகல்",
+        note_en: "If marriage certificate is unavailable, Smart Ration Card or joint affidavit can be submitted.",
+        note_ta: "திருமணச் சான்றிதழ் இல்லையெனில், ஸ்மார்ட் ரேஷன் கார்டு சமர்ப்பிக்கலாம்.",
+        essential: false
+      },
+      {
+        id: "doc-bc-4",
+        name_en: "Address Proof of Parents (Electricity Bill / Gas / Ration)",
+        name_ta: "பெற்றோரின் முகவரி சான்று (மின் கட்டணம் / ரேஷன் அட்டை)",
+        category: "address_proof",
+        reason_en: "Establishes permanent/current residence jurisdiction for certificate delivery.",
+        reason_ta: "சான்றிதழ் வழங்கும் அதிகார வரம்பை உறுதி செய்ய முகவரி சான்று தேவை.",
+        format: "photocopy",
+        format_label_en: "1 Photocopy (Recent)",
+        format_label_ta: "1 நகல் (சமீபத்தியது)",
+        note_en: "Address should match the locality of the registrar office if applying locally.",
+        note_ta: "முகவரி சம்பந்தப்பட்ட எல்லைக்குள் இருத்தல் நலம்.",
+        essential: true
+      },
+      {
+        id: "doc-bc-5",
+        name_en: "Delayed Registration Non-Availability Certificate (If > 1 year)",
+        name_ta: "தாமத பதிவுக்கான தடையில்லாச் சான்று (1 வருடத்திற்கு மேல் எனில்)",
+        category: "supporting_proof",
+        reason_en: "Mandatory if birth was not registered within 21 days or 1 year under Section 13(3) of RBD Act.",
+        reason_ta: "குழந்தை பிறந்து 1 வருடத்திற்கு மேல் பதிவு செய்யப்படாமல் இருந்தால் வருவாய் கோட்டாட்சியர் (RDO) உத்தரவு தேவை.",
+        format: "original",
+        format_label_en: "Original Order / Court Order",
+        format_label_ta: "அசல் ஆணை / நீதிமன்ற உத்தரவு",
+        note_en: "Requires an affidavit and order from the Revenue Divisional Officer (RDO) or Magistrate.",
+        note_ta: "RDO அல்லது வட்டாட்சியர் அனுமதியுடன் கூடிய பிரமாணப் பத்திரம் தேவை.",
+        essential: false,
+        conditional: "Only for delayed registration (>1 year)"
+      }
+    ]
+  },
+  {
+    id: "community-certificate",
+    category: "certificates",
+    name_en: "Community Certificate (SC / ST / BC / MBC / OBC)",
+    name_ta: "சாதிச் சான்றிதழ் (BC / MBC / SC / ST / OBC)",
+    desc_en: "Certifies reservation category for education, government examinations, and welfare benefits.",
+    desc_ta: "கல்வி, வேலைவாய்ப்பு மற்றும் அரசு நலத்திட்டங்களுக்கான சாதி பிரிவு சான்றளிப்பு ஆவணம்.",
+    issuing_authority_en: "Revenue Dept (Tahsildar / Zonal Deputy Tahsildar)",
+    issuing_authority_ta: "வருவாய்த்துறை (வட்டாட்சியர் / மண்டல துணை வட்டாட்சியர்)",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "15 - 30 Working Days",
+    icon: "badge",
+    documents: [
+      {
+        id: "doc-cc-1",
+        name_en: "Applicant's School Transfer Certificate (TC) / Marksheet",
+        name_ta: "விண்ணப்பதாரரின் பள்ளி மாற்றுச் சான்றிதழ் (TC) / மதிப்பெண் பட்டியல்",
+        category: "primary_proof",
+        reason_en: "Contains student's community/caste as recorded during school admission.",
+        reason_ta: "பள்ளி சேர்க்கையின் போது பதிவு செய்யப்பட்ட சாதி விபரத்தை நிரூபிக்கிறது.",
+        format: "photocopy_self_attested",
+        format_label_en: "Photocopy with School Stamp",
+        format_label_ta: "பள்ளி முத்திரையுடன் கூடிய நகல்",
+        note_en: "Community column should not be left blank or written as 'Not Disclosed'.",
+        note_ta: "சாதி பத்தி காலியாக இருக்கக்கூடாது.",
+        essential: true
+      },
+      {
+        id: "doc-cc-2",
+        name_en: "Father's or Mother's Community Certificate",
+        name_ta: "தந்தை அல்லது தாயின் சாதிச் சான்றிதழ்",
+        category: "relationship_proof",
+        reason_en: "Crucial lineage evidence proving heritage and family community status.",
+        reason_ta: "குடும்பத்தின் வம்சாவளி சாதி நிலையை உறுதி செய்யும் முதன்மை ஆதாரம்.",
+        format: "photocopy",
+        format_label_en: "Photocopy (Original for verification)",
+        format_label_ta: "நகல் (சரிபார்க்க அசல்)",
+        note_en: "If parents' certificates are unavailable, sibling's or paternal uncle's certificate can be attached.",
+        note_ta: "பெற்றோர் சான்றிதழ் இல்லையெனில் உடன்பிறந்தோரின் சான்றிதழ் சமர்ப்பிக்கலாம்.",
+        essential: true
+      },
+      {
+        id: "doc-cc-3",
+        name_en: "Applicant's Aadhaar Card",
+        name_ta: "விண்ணப்பதாரரின் ஆதார் அட்டை",
+        category: "identity_proof",
+        reason_en: "Biometric and demographic identity verification for the citizen.",
+        reason_ta: "விண்ணப்பதாரரின் அடையாளம் மற்றும் முகவரியை உறுதி செய்ய.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Ensure applicant name matches school records.",
+        note_ta: "ஆதாரில் உள்ள பெயர் பள்ளி பதிவேடுகளுடன் பொருந்த வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-cc-4",
+        name_en: "Smart Family Ration Card",
+        name_ta: "ஸ்மார்ட் குடும்ப அட்டை",
+        category: "address_proof",
+        reason_en: "Proves family structure and local village/taluk jurisdiction under the VAO.",
+        reason_ta: "குடும்ப உறவு மற்றும் உள்ளூர் கிராம நிர்வாக அலுவலர் (VAO) எல்லை சரிபார்ப்புக்கு.",
+        format: "photocopy",
+        format_label_en: "Photocopy",
+        format_label_ta: "நகல்",
+        note_en: "Applicant must be listed as a member in the active ration card.",
+        note_ta: "ரேஷன் கார்டில் விண்ணப்பதாரர் பெயர் சேர்க்கப்பட்டிருக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-cc-5",
+        name_en: "Recent Passport Size Photographs (2 Nos)",
+        name_ta: "சமீபத்திய பாஸ்போர்ட் அளவு புகைப்படங்கள் (2)",
+        category: "photographs",
+        reason_en: "Affixed onto physical records and e-District digital identity archive.",
+        reason_ta: "மின் ஆவண காப்பகம் மற்றும் பதிவேடுகளுக்காக.",
+        format: "physical_photos",
+        format_label_en: "2 Color Photos (White Background)",
+        format_label_ta: "2 வண்ணப் படங்கள் (வெள்ளை பின்னணி)",
+        note_en: "Must be clear and recent (within past 3 months).",
+        note_ta: "3 மாதங்களுக்குள் எடுக்கப்பட்ட சமீபத்திய புகைப்படம்.",
+        essential: true
+      },
+      {
+        id: "doc-cc-6",
+        name_en: "Self-Declaration / VAO Inquiry Report",
+        name_ta: "சுய அறிவிப்பு / கிராம நிர்வாக அலுவலர் (VAO) அறிக்கை",
+        category: "supporting_proof",
+        reason_en: "Mandatory local field verification report by the Village Administrative Officer.",
+        reason_ta: "கிராம நிர்வாக அலுவலர் மற்றும் வருவாய் ஆய்வாளரின் கள விசாரணை அறிக்கை.",
+        format: "original",
+        format_label_en: "System Generated / VAO Endorsed",
+        format_label_ta: "VAO பரிந்துரை / இணைய ஒப்புதல்",
+        note_en: "Usually done digitally via e-District workflow after applying at e-Seva.",
+        note_ta: "இ-சேவை மையத்தில் விண்ணப்பித்த பின் VAO நேரடியாக களஆய்வு செய்வார்.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "income-certificate",
+    category: "revenue",
+    name_en: "Income Certificate",
+    name_ta: "வருமானச் சான்றிதழ்",
+    desc_en: "Document specifying the annual household income of a family, needed for scholarships & welfare.",
+    desc_ta: "குடும்பத்தின் ஆண்டு வருமானத்தை உறுதி செய்யும் சான்றிதழ் (உதவித்தொகை மற்றும் சலுகைகளுக்கு).",
+    issuing_authority_en: "Revenue Department (Tahsildar)",
+    issuing_authority_ta: "வருவாய்த்துறை (வட்டாட்சியர்)",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "7 - 15 Working Days",
+    icon: "currency",
+    documents: [
+      {
+        id: "doc-ic-1",
+        name_en: "Salary Slip / Form 16 / Income Affidavit",
+        name_ta: "சம்பள ரசீது / படிவம் 16 / வருமான பிரமாணப் பத்திரம்",
+        category: "primary_proof",
+        reason_en: "Verifies the current earnings from employment or business.",
+        reason_ta: "மாதாந்திர சம்பளம் அல்லது தொழில் வருமானத்தை நிரூபிக்க.",
+        format: "original_and_copy",
+        format_label_en: "Original Salary Slip / Notarized Affidavit",
+        format_label_ta: "சமீபத்திய சம்பள ரசீது / நோட்டரி சான்று",
+        note_en: "For daily wage / agricultural earners, a notarized self-affidavit is accepted.",
+        note_ta: "தினக்கூலி அல்லது விவசாயிகளுக்கு நோட்டரி பிரமாணப் பத்திரம் போதுமானது.",
+        essential: true
+      },
+      {
+        id: "doc-ic-2",
+        name_en: "Smart Family Ration Card",
+        name_ta: "ஸ்மார்ட் குடும்ப அட்டை",
+        category: "address_proof",
+        reason_en: "Lists all earning and non-earning members of the household.",
+        reason_ta: "குடும்பத்தில் உள்ள அனைத்து உறுப்பினர்களையும் வருமானத்தில் கணக்கிட.",
+        format: "photocopy",
+        format_label_en: "Photocopy",
+        format_label_ta: "நகல்",
+        note_en: "Ensure ration card is linked and active with correct member count.",
+        note_ta: "ரேஷன் கார்டு செயலில் உள்ளதை உறுதிப்படுத்தவும்.",
+        essential: true
+      },
+      {
+        id: "doc-ic-3",
+        name_en: "Applicant / Head of Family's Aadhaar Card",
+        name_ta: "விண்ணப்பதாரர் / குடும்பத் தலைவரின் ஆதார் அட்டை",
+        category: "identity_proof",
+        reason_en: "Primary identity verification for the citizen requesting income assessment.",
+        reason_ta: "விண்ணப்பதாரரின் அடையாளத்தை உறுதிப்படுத்த.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Must be clearly readable with DOB visible.",
+        note_ta: "பிறந்த தேதி தெளிவாகத் தெரிய வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-ic-4",
+        name_en: "Property Tax Receipt / EB Bill / Rental Agreement",
+        name_ta: "சொத்து வரி ரசீது / மின்கட்டண ரசீது / வாடகை ஒப்பந்தம்",
+        category: "address_proof",
+        reason_en: "Proves current residential status and property ownership details.",
+        reason_ta: "தற்போதைய குடியிருப்பு மற்றும் சொத்து விவரங்களை மதிப்பிட.",
+        format: "photocopy",
+        format_label_en: "Latest Receipt Copy",
+        format_label_ta: "சமீபத்திய ரசீது நகல்",
+        note_en: "Recent receipt within last 6 months.",
+        note_ta: "கடந்த 6 மாதங்களுக்குள் செலுத்தப்பட்ட ரசீது.",
+        essential: true
+      },
+      {
+        id: "doc-ic-5",
+        name_en: "Bank Passbook Statement (Last 3 - 6 months)",
+        name_ta: "வங்கி கணக்குப் புத்தக அறிக்கை (3 முதல் 6 மாதங்கள்)",
+        category: "supporting_proof",
+        reason_en: "Used by the Revenue Inspector to verify regular incoming cash flows.",
+        reason_ta: "வருவாய் ஆய்வாளர் பணப் பரிவர்த்தனைகளை சரிபார்க்க.",
+        format: "photocopy",
+        format_label_en: "Bank Passbook First Page + Recent Transactions",
+        format_label_ta: "வங்கி பாஸ்புக் முதல் பக்கம் + பரிவர்த்தனைகள்",
+        note_en: "Ensure account holder name and IFSC are legible.",
+        note_ta: "கணக்கு எண் மற்றும் IFSC குறியீடு தெளிவாக இருக்க வேண்டும்.",
+        essential: false
+      },
+      {
+        id: "doc-ic-6",
+        name_en: "Passport Size Photograph (1 No)",
+        name_ta: "பாஸ்போர்ட் அளவு புகைப்படம் (1)",
+        category: "photographs",
+        reason_en: "Printed directly on the issued digital income certificate.",
+        reason_ta: "வழங்கப்படும் மின்னணு சான்றிதழில் பதிவேற்றப்பட.",
+        format: "physical_photos",
+        format_label_en: "1 Recent Photo",
+        format_label_ta: "1 சமீபத்திய புகைப்படம்",
+        note_en: "Keep a digital soft copy or passport photo ready.",
+        note_ta: "நேரடி ஸ்கேனிங்கிற்கு புகைப்படம் தேவை.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "residence-certificate",
+    category: "revenue",
+    name_en: "Residence / Nativity Certificate",
+    name_ta: "இருப்பிடச் சான்றிதழ் / குடியுரிமைச் சான்றிதழ்",
+    desc_en: "Proves continuous residence in a specific taluk/district for admission, job quotas, or exams.",
+    desc_ta: "குறிப்பிட்ட பகுதியில் தொடர்ந்து வசித்து வருவதை நிரூபிக்கும் சான்றிதழ்.",
+    issuing_authority_en: "Revenue Dept (Tahsildar)",
+    issuing_authority_ta: "வருவாய்த்துறை (வட்டாட்சியர்)",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "7 - 15 Working Days",
+    icon: "home",
+    documents: [
+      {
+        id: "doc-rc-1",
+        name_en: "Smart Family Ration Card",
+        name_ta: "ஸ்மார்ட் குடும்ப அட்டை",
+        category: "address_proof",
+        reason_en: "Primary legal proof of family domicile in the local fair price shop jurisdiction.",
+        reason_ta: "உள்ளூர் நியாய விலை கடை எல்லைக்குள் வசிப்பதற்கான முதன்மை ஆதாரம்.",
+        format: "photocopy",
+        format_label_en: "Photocopy of both sides",
+        format_label_ta: "இரு பக்க நகல்",
+        note_en: "Address on ration card will be considered primary.",
+        note_ta: "ரேஷன் கார்டில் உள்ள முகவரி முதன்மையாகக் கருதப்படும்.",
+        essential: true
+      },
+      {
+        id: "doc-rc-2",
+        name_en: "Applicant's Aadhaar Card / Voter ID Card",
+        name_ta: "விண்ணப்பதாரர் ஆதார் அட்டை / வாக்காளர் அடையாள அட்டை",
+        category: "identity_proof",
+        reason_en: "Confirms age, citizenship, and identity of applicant.",
+        reason_ta: "விண்ணப்பதாரரின் குடியுரிமை மற்றும் அடையாள சரிபார்ப்பிற்கு.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Carry original during verification.",
+        note_ta: "சரிபார்ப்பின் போது அசல் எடுத்து வரவும்.",
+        essential: true
+      },
+      {
+        id: "doc-rc-3",
+        name_en: "Proof of Continuous Residence (5 Years)",
+        name_ta: "தொடர் குடியிருப்புக்கான 5 ஆண்டு ஆதாரம்",
+        category: "primary_proof",
+        reason_en: "Proves living in the State/District continuously (School TC / Gas bill / Land tax / Rental agreement).",
+        reason_ta: "5 வருடங்களாக தொடர்ந்து அப்பகுதியில் வசிப்பதற்கான ஆவணம் (பள்ளி TC, வீட்டு வரி).",
+        format: "photocopy",
+        format_label_en: "School study certificate / House tax receipts (last 5 years)",
+        format_label_ta: "பள்ளி படிப்பு சான்றிதழ் / 5 ஆண்டு வீட்டு வரி ரசீதுகள்",
+        note_en: "Crucial for Nativity certificates for medical/engineering counseling (NEET/TNEA).",
+        note_ta: "மருத்துவ/பொறியியல் கலந்தாய்வுக்கு (NEET/TNEA) இது மிக அவசியம்.",
+        essential: true
+      },
+      {
+        id: "doc-rc-4",
+        name_en: "Electricity Bill or Property Tax Receipt (Recent)",
+        name_ta: "மின் கட்டண ரசீது அல்லது சொத்து வரி ரசீது",
+        category: "address_proof",
+        reason_en: "Verifies current active residence premises.",
+        reason_ta: "தற்போதைய குடியிருப்பு இடத்தை உறுதி செய்ய.",
+        format: "photocopy",
+        format_label_en: "Latest Receipt Copy",
+        format_label_ta: "சமீபத்திய ரசீது நகல்",
+        note_en: "If rented, attach Registered Rental Agreement copy.",
+        note_ta: "வாடகை வீட்டில் இருப்பின் வாடகை ஒப்பந்த நகல் சமர்ப்பிக்கவும்.",
+        essential: true
+      },
+      {
+        id: "doc-rc-5",
+        name_en: "Passport Size Photograph (1 No)",
+        name_ta: "பாஸ்போர்ட் அளவு புகைப்படம் (1)",
+        category: "photographs",
+        reason_en: "Required for digital certificate generation.",
+        reason_ta: "மின்னணு சான்றிதழ் பதிவுக்கு.",
+        format: "physical_photos",
+        format_label_en: "1 Recent Photo",
+        format_label_ta: "1 புகைப்படம்",
+        note_en: "Clean clear front-facing photograph.",
+        note_ta: "தெளிவான புகைப்படம்.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "death-certificate",
+    category: "certificates",
+    name_en: "Death Certificate",
+    name_ta: "இறப்புச் சான்றிதழ்",
+    desc_en: "Official document recording the demise of a person, essential for legal inheritance & pensions.",
+    desc_ta: "இறப்பை அதிகாரப்பூர்வமாக பதிவு செய்து வாரிசுரிமை மற்றும் காப்பீட்டுக்கு தேவையான சான்றிதழ்.",
+    issuing_authority_en: "Local Body / Corporation / Municipality / PHC",
+    issuing_authority_ta: "உள்ளாட்சி / மாநகராட்சி / நகராட்சி / ஆரம்ப சுகாதார நிலையம்",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "7 - 14 Working Days",
+    icon: "file-text",
+    documents: [
+      {
+        id: "doc-dc-1",
+        name_en: "Hospital Death Summary / Form 2 / Medical Cause of Death",
+        name_ta: "மருத்துவமனை இறப்பு அறிக்கை / படிவம் 2 / இறப்புக்கான மருத்துவக் காரணம்",
+        category: "primary_proof",
+        reason_en: "Legally certifies the date, time, and medical cause of death.",
+        reason_ta: "இறந்த தேதி, நேரம் மற்றும் மருத்துவ காரணத்தை நிரூபிக்க.",
+        format: "original_and_copy",
+        format_label_en: "Original Medical Form",
+        format_label_ta: "அசல் மருத்துவ அறிக்கை",
+        note_en: "If death occurred at home, certificate/report from the Village Administrative Officer (VAO) or local doctor is required.",
+        note_ta: "வீட்டில் மரணம் நிகழ்ந்தால், VAO அல்லது உள்ளூர் மருத்துவரின் சான்று தேவை.",
+        essential: true
+      },
+      {
+        id: "doc-dc-2",
+        name_en: "Deceased Person's Aadhaar Card / Voter ID",
+        name_ta: "மறைந்த நபரின் ஆதார் அட்டை / வாக்காளர் அடையாள அட்டை",
+        category: "identity_proof",
+        reason_en: "To record national identity numbers and mark records in the civil registry.",
+        reason_ta: "மறைந்த நபரின் விவரங்களை அரசு பதிவேட்டில் பதிய.",
+        format: "original_and_copy",
+        format_label_en: "Original + 1 Photocopy",
+        format_label_ta: "அசல் + 1 நகல்",
+        note_en: "Original will be verified and returned.",
+        note_ta: "அசல் சரிபார்க்கப்பட்டு திருப்பித் தரப்படும்.",
+        essential: true
+      },
+      {
+        id: "doc-dc-3",
+        name_en: "Cremation / Burial Ground Receipt",
+        name_ta: "சுடுகாடு / இடுகாடு ரசீது (அடக்கம் செய்யப்பட்ட ரசீது)",
+        category: "supporting_proof",
+        reason_en: "Proof of final disposal of the mortal remains as required under civil registration act.",
+        reason_ta: "இறுதிச் சடங்கு நடைபெற்றதற்கான நகராட்சி / பஞ்சாயத்து ரசீது.",
+        format: "original_and_copy",
+        format_label_en: "Original Receipt",
+        format_label_ta: "அசல் ரசீது",
+        note_en: "Issued by the municipal or village burial ground caretaker.",
+        note_ta: "சுடுகாட்டு பொறுப்பாளரால் வழங்கப்பட்ட ரசீது.",
+        essential: true
+      },
+      {
+        id: "doc-dc-4",
+        name_en: "Applicant's Identity & Relationship Proof (Aadhaar / Ration Card)",
+        name_ta: "விண்ணப்பதாரரின் அடையாள மற்றும் உறவு சான்று",
+        category: "relationship_proof",
+        reason_en: "Verifies that the person applying is an immediate family member / next of kin.",
+        reason_ta: "விண்ணப்பிப்பவர் முதல் நிலை வாரிசு அல்லது குடும்ப உறுப்பினர் என உறுதி செய்ய.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Photocopy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Smart ration card showing deceased and applicant together is ideal.",
+        note_ta: "இருவர் பெயரும் உள்ள ரேஷன் அட்டை மிகச் சிறந்தது.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "first-graduate-certificate",
+    category: "certificates",
+    name_en: "First Graduate Certificate",
+    name_ta: "முதல் பட்டதாரி சான்றிதழ்",
+    desc_en: "Grants tuition fee concession in higher education colleges for the first graduate in the family.",
+    desc_ta: "குடும்பத்தில் முதல் பட்டதாரிக்கு கல்லூரிகளில் கல்விக் கட்டண சலுகை வழங்கும் சான்றிதழ்.",
+    issuing_authority_en: "Revenue Dept (Tahsildar)",
+    issuing_authority_ta: "வருவாய்த்துறை (வட்டாட்சியர்)",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "15 - 20 Working Days",
+    icon: "academic-cap",
+    documents: [
+      {
+        id: "doc-fg-1",
+        name_en: "Applicant's 10th & 12th Marksheets / School TC",
+        name_ta: "விண்ணப்பதாரரின் 10 மற்றும் 12-ம் வகுப்பு மதிப்பெண் சான்றிதழ் / TC",
+        category: "primary_proof",
+        reason_en: "Proves higher secondary completion and eligibility for degree admission.",
+        reason_ta: "பள்ளிப் படிப்பை முடித்து கல்லூரிக்கு விண்ணப்பிப்பதை நிரூபிக்க.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copies",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்கள்",
+        note_en: "Carry originals for verification.",
+        note_ta: "அசல் ஆவணங்களை எடுத்துச் செல்லவும்.",
+        essential: true
+      },
+      {
+        id: "doc-fg-2",
+        name_en: "Father & Mother's Transfer Certificates / Education Proof",
+        name_ta: "தாய் மற்றும் தந்தையின் பள்ளி மாற்றுச் சான்றிதழ் (TC) / கல்வி சான்று",
+        category: "supporting_proof",
+        reason_en: "Proves that parents have not completed graduation (degree).",
+        reason_ta: "பெற்றோர் கல்லூரி பட்டப்படிப்பு முடிக்கவில்லை என்பதை நிரூபிக்க.",
+        format: "photocopy",
+        format_label_en: "TC Photocopies / Illiterate Notary Affidavit if no schooling",
+        format_label_ta: "பள்ளி TC நகல்கள் / பள்ளி செல்லாதோருக்கு நோட்டரி பிரமாணப் பத்திரம்",
+        note_en: "If parents did not go to school, a notarized self-affidavit is mandatory.",
+        note_ta: "பெற்றோர் பள்ளி செல்லவில்லை எனில் பிரமாணப் பத்திரம் சமர்ப்பிக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-fg-3",
+        name_en: "Siblings' Educational Certificates (Brothers/Sisters)",
+        name_ta: "உடன்பிறந்த சகோதர, சகோதரிகளின் கல்விச் சான்றிதழ்கள்",
+        category: "relationship_proof",
+        reason_en: "Confirms that elder siblings are not graduates and haven't availed this benefit.",
+        reason_ta: "மூத்த சகோதரர்/சகோதரி பட்டதாரியாக இல்லை அல்லது இச்சலுகை பெறவில்லை என உறுதி செய்ய.",
+        format: "photocopy",
+        format_label_en: "Current study certificate / School TC of siblings",
+        format_label_ta: "பள்ளி TC அல்லது படிப்பு சான்றிதழ்",
+        note_en: "If single child, mention in self-declaration.",
+        note_ta: "ஒரே குழந்தை எனில் சுய வாக்குமூலத்தில் குறிப்பிடலாம்.",
+        essential: true
+      },
+      {
+        id: "doc-fg-4",
+        name_en: "Smart Family Ration Card",
+        name_ta: "ஸ்மார்ட் குடும்ப அட்டை",
+        category: "address_proof",
+        reason_en: "Verifies total family members, parents, and siblings.",
+        reason_ta: "முழு குடும்ப உறுப்பினர்களின் எண்ணிக்கையை அறிய.",
+        format: "photocopy",
+        format_label_en: "Photocopy of both sides",
+        format_label_ta: "இரு பக்க நகல்",
+        note_en: "All family members must appear on the same card.",
+        note_ta: "அனைத்து குடும்ப உறுப்பினர்களும் இதில் இருக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-fg-5",
+        name_en: "Joint Declaration by Parents and Applicant (Annexure Form)",
+        name_ta: "பெற்றோர் மற்றும் மாணவரின் கூட்டு உறுதிமொழிப் படிவம்",
+        category: "primary_proof",
+        reason_en: "Legal declaration stating no member of the family has graduated.",
+        reason_ta: "குடும்பத்தில் இதுவரை யாரும் பட்டப்படிப்பு முடிக்கவில்லை என்ற உறுதிமொழி.",
+        format: "original",
+        format_label_en: "Original Signed Declaration Form",
+        format_label_ta: "கையொப்பமிட்ட அசல் படிவம்",
+        note_en: "Signed by student and parents in the presence of VAO.",
+        note_ta: "மாணவர் மற்றும் பெற்றோர் கையொப்பமிட வேண்டும்.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "legal-heir-certificate",
+    category: "certificates",
+    name_en: "Legal Heir Certificate (வாரிசுச் சான்றிதழ்)",
+    name_ta: "வாரிசுச் சான்றிதழ்",
+    desc_en: "Identifies the legitimate living legal successors of a deceased person for asset claim and pension.",
+    desc_ta: "மறைந்த நபரின் சொத்துக்கள், வேலை மற்றும் ஓய்வூதிய உரிமைக்கான வாரிசு சான்று.",
+    issuing_authority_en: "Revenue Dept (Tahsildar)",
+    issuing_authority_ta: "வருவாய்த்துறை (வட்டாட்சியர்)",
+    standard_fee: "₹60 (e-Seva charge)",
+    processing_days: "15 - 30 Working Days",
+    icon: "users",
+    documents: [
+      {
+        id: "doc-lh-1",
+        name_en: "Death Certificate of the Deceased Person",
+        name_ta: "மறைந்த நபரின் இறப்புச் சான்றிதழ்",
+        category: "primary_proof",
+        reason_en: "Mandatory foundation document proving demise.",
+        reason_ta: "இறப்பை அதிகாரப்பூர்வமாக நிரூபிக்கும் முதன்மை ஆவணம்.",
+        format: "original_and_copy",
+        format_label_en: "Original + Photocopy",
+        format_label_ta: "அசல் + நகல்",
+        note_en: "Must be issued by the competent Municipal/Panchayat registrar.",
+        note_ta: "அங்கீகரிக்கப்பட்ட பதிவாளரால் வழங்கப்பட்டிருக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-lh-2",
+        name_en: "Aadhaar Cards of All Surviving Legal Heirs",
+        name_ta: "உயிருடன் உள்ள அனைத்து வாரிசுகளின் ஆதார் அட்டைகள்",
+        category: "identity_proof",
+        reason_en: "Individual identification of each surviving heir (Spouse, Children, Parents).",
+        reason_ta: "ஒவ்வொரு சட்டபூர்வ வாரிசின் அடையாள சரிபார்ப்பிற்கு.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copies of All Heirs",
+        format_label_ta: "அனைத்து வாரிசுகளின் சுய சான்றொப்ப நகல்கள்",
+        note_en: "Carry originals for VAO field inquiry verification.",
+        note_ta: "VAO களவிசாரணையின் போது அசல் ஆவணங்கள் காட்டப்பட வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-lh-3",
+        name_en: "Smart Family Ration Card of Deceased",
+        name_ta: "மறைந்த நபரின் ஸ்மார்ட் குடும்ப அட்டை",
+        category: "address_proof",
+        reason_en: "Shows the family structure and names recorded together before demise.",
+        reason_ta: "மறைவுக்கு முன் குடும்பத்தில் இருந்த நபர்களின் பதிவை அறிய.",
+        format: "photocopy",
+        format_label_en: "Photocopy",
+        format_label_ta: "நகல்",
+        note_en: "Ensure the deceased was listed on the card.",
+        note_ta: "மறைந்த நபர் பெயர் இதில் இருக்க வேண்டும்.",
+        essential: true
+      },
+      {
+        id: "doc-lh-4",
+        name_en: "Marriage Certificate / Wedding Invitation (For Spouse Claim)",
+        name_ta: "திருமணச் சான்றிதழ் / திருமண அழைப்பிதழ் (மனைவி/கணவர்)",
+        category: "relationship_proof",
+        reason_en: "Proves legal marital relationship with the deceased.",
+        reason_ta: "மறைந்தவருடன் சட்டப்பூர்வ திருமண பந்தத்தை நிரூபிக்க.",
+        format: "photocopy",
+        format_label_en: "Photocopy (Original for verification)",
+        format_label_ta: "நகல் (சரிபார்க்க அசல்)",
+        note_en: "If marriage certificate is absent, affidavit may be requested.",
+        note_ta: "சான்றிதழ் இல்லையெனில் உறுதிமொழி பத்திரம் தேவைப்படலாம்.",
+        essential: true
+      },
+      {
+        id: "doc-lh-5",
+        name_en: "Notarized Affidavit with Names of All Living Legal Heirs",
+        name_ta: "அனைத்து வாரிசுகளின் விவரம் அடங்கிய நோட்டரி பிரமாணப் பத்திரம்",
+        category: "primary_proof",
+        reason_en: "Sworn legal undertaking stating that no other heirs exist.",
+        reason_ta: "வேறு வாரிசுகள் யாரும் இல்லை என்பதை உறுதி செய்யும் சட்டபூர்வ உறுதிமொழி.",
+        format: "original",
+        format_label_en: "Original Stamped Notarized Affidavit (₹20 Stamp)",
+        format_label_ta: "நோட்டரி கையொப்பமிட்ட அசல் பிரமாணப் பத்திரம்",
+        note_en: "Must clearly list spouse, all children, and deceased person's mother if alive.",
+        note_ta: "மனைவி, குழந்தைகள் மற்றும் தாயார் பெயர் இடம் பெற வேண்டும்.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "driving-license",
+    category: "transport",
+    name_en: "Driving License (LLR / Permanent DL)",
+    name_ta: "ஓட்டுநர் உரிமம் (பழகுநர் LLR / நிரந்தர DL)",
+    desc_en: "Authorization to drive motor vehicles issued by the Regional Transport Office (RTO / Sarathi Parivahan).",
+    desc_ta: "வட்டாரப் போக்குவரத்து அலுவலகத்தால் (RTO) வழங்கப்படும் வாகன ஓட்டுநர் உரிமம்.",
+    issuing_authority_en: "Transport Department (RTO)",
+    issuing_authority_ta: "போக்குவரத்துத் துறை (RTO)",
+    standard_fee: "₹200 - ₹500 (depending on vehicle class)",
+    processing_days: "Same Day (LLR) / 7 Days (DL test)",
+    icon: "truck",
+    documents: [
+      {
+        id: "doc-dl-1",
+        name_en: "Age Proof (10th Marksheet / Birth Certificate / Passport)",
+        name_ta: "வயது சான்று (10-ம் வகுப்பு மதிப்பெண் / பிறப்பு சான்றிதழ்)",
+        category: "primary_proof",
+        reason_en: "Verifies applicant meets minimum age (18 for gear vehicles, 16 for gearless 50cc).",
+        reason_ta: "விண்ணப்பதாரர் குறைந்தபட்ச வயது வரம்பை அடைந்துவிட்டாரா என்பதை அறிய.",
+        format: "original_and_copy",
+        format_label_en: "Original + Photocopy",
+        format_label_ta: "அசல் + நகல்",
+        note_en: "Birth certificate or SSLC book is widely preferred at RTO.",
+        note_ta: "SSLC மார்க்ஷீட் அல்லது பிறப்புச் சான்றிதழ் மிகச் சிறந்தது.",
+        essential: true
+      },
+      {
+        id: "doc-dl-2",
+        name_en: "Address Proof (Aadhaar Card / Voter ID / Passport)",
+        name_ta: "முகவரி சான்று (ஆதார் அட்டை / வாக்காளர் அட்டை)",
+        category: "address_proof",
+        reason_en: "Determines jurisdiction of the Regional Transport Office (RTO).",
+        reason_ta: "சம்பந்தப்பட்ட வட்டாரப் போக்குவரத்து அலுவலக (RTO) எல்லையை அறிய.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Photocopy",
+        format_label_ta: "சுய சான்றொப்பமிட்ட நகல்",
+        note_en: "Aadhaar eKYC online avoids physical address proof scrutiny.",
+        note_ta: "ஆதார் eKYC செய்தால் நேரடி ஆவண சரிபார்ப்பு எளிதாகும்.",
+        essential: true
+      },
+      {
+        id: "doc-dl-3",
+        name_en: "Medical Certificate (Form 1A for >40 yrs or Commercial)",
+        name_ta: "மருத்துவ சான்றிதழ் (படிவம் 1A - 40 வயதுக்கு மேல் அல்லது வணிக வாகனங்கள்)",
+        category: "supporting_proof",
+        reason_en: "Certifies physical and visual fitness to operate a motor vehicle safely.",
+        reason_ta: "வாகனம் ஓட்ட தேவையான கண்பார்வை மற்றும் உடல் தகுதியை அறிய.",
+        format: "original",
+        format_label_en: "Original Signed by Registered Medical Practitioner",
+        format_label_ta: "அங்கீகரிக்கப்பட்ட மருத்துவரின் அசல் சான்று",
+        note_en: "Mandatory if age >40 or applying for transport/commercial badge.",
+        note_ta: "40 வயதுக்கு மேற்பட்டோருக்கு அல்லது வணிக உரிமத்திற்கு கட்டாயம்.",
+        essential: false,
+        conditional: "Mandatory for >40 yrs or Transport licenses"
+      },
+      {
+        id: "doc-dl-4",
+        name_en: "Learner's License (LLR) Copy (For Permanent DL)",
+        name_ta: "பழகுநர் உரிமம் (LLR) நகல் (நிரந்தர உரிமத்திற்கு)",
+        category: "primary_proof",
+        reason_en: "Mandatory prerequisite before taking the practical 8-track / driving test.",
+        reason_ta: "நிரந்தர ஓட்டுநர் உரிமத் தேர்வுக்கு செல்ல பழகுநர் உரிமம் அவசியம்.",
+        format: "original_and_copy",
+        format_label_en: "Active LLR Printout (>30 days old and <6 months)",
+        format_label_ta: "செல்லுபடியாகும் LLR அசல் அச்சு நகல்",
+        note_en: "Must be at least 30 days old and within 180 days validity.",
+        note_ta: "LLR பெற்று 30 நாட்கள் முடிந்திருக்க வேண்டும் (180 நாட்களுக்குள்).",
+        essential: true,
+        conditional: "Only when applying for Permanent DL test"
+      },
+      {
+        id: "doc-dl-5",
+        name_en: "Passport Size Photographs (3 Nos)",
+        name_ta: "பாஸ்போர்ட் அளவு புகைப்படங்கள் (3)",
+        category: "photographs",
+        reason_en: "For RTO physical file index (biometrics will also be taken at RTO counter).",
+        reason_ta: "RTO பதிவேட்டிற்கு (நேரடி பயோமெட்ரிக் புகைப்படமும் எடுக்கப்படும்).",
+        format: "physical_photos",
+        format_label_en: "3 Recent Photos",
+        format_label_ta: "3 சமீபத்திய புகைப்படங்கள்",
+        note_en: "Carry spares for test forms.",
+        note_ta: "படிவங்களில் ஒட்ட கூடுதல் படங்கள் எடுத்துச் செல்லவும்.",
+        essential: true
+      }
+    ]
+  },
+  {
+    id: "smart-ration-card",
+    category: "welfare",
+    name_en: "New Smart Family Ration Card (புதிய குடும்ப அட்டை)",
+    name_ta: "புதிய குடும்ப அட்டை (ஸ்மார்ட் ரேஷன் கார்டு)",
+    desc_en: "Civil supplies card for subsidized food commodities, subsidized gas, and key identity proof.",
+    desc_ta: "நியாயவிலைக் கடைகளில் உணவுப் பொருட்கள் பெறவும் குடும்ப அடையாளமாகவும் பயன்படும் அட்டை.",
+    issuing_authority_en: "Civil Supplies and Consumer Protection Dept (TNePDS)",
+    issuing_authority_ta: "உணவுப்பொருள் வழங்கல் மற்றும் நுகர்வோர் பாதுகாப்புத் துறை",
+    standard_fee: "₹20 (Card printing fee)",
+    processing_days: "15 - 30 Working Days",
+    icon: "shopping-bag",
+    documents: [
+      {
+        id: "doc-rcard-1",
+        name_en: "Aadhaar Cards of All Family Members to be Included",
+        name_ta: "சேர்க்கப்பட வேண்டிய அனைத்து குடும்ப உறுப்பினர்களின் ஆதார் அட்டைகள்",
+        category: "identity_proof",
+        reason_en: "Biometric and demographic deduplication ensuring no member exists in multiple cards.",
+        reason_ta: "ஒரு நபர் ஒன்றுக்கும் மேற்பட்ட குடும்ப அட்டைகளில் இல்லை என்பதை உறுதி செய்ய.",
+        format: "photocopy_self_attested",
+        format_label_en: "Self-Attested Copies of All Members",
+        format_label_ta: "அனைத்து உறுப்பினர்களின் நகல்கள்",
+        note_en: "All Aadhaar cards must have phone numbers linked.",
+        note_ta: "ஆதாருடன் தொலைபேசி எண் இணைக்கப்பட்டிருப்பது விரைவுபடுத்தும்.",
+        essential: true
+      },
+      {
+        id: "doc-rcard-2",
+        name_en: "Proof of Address (Electricity Bill / Rental Agreement / Property Tax)",
+        name_ta: "முகவரி சான்று (மின்கட்டணம் / வாடகை ஒப்பந்தம் / சொத்து வரி)",
+        category: "address_proof",
+        reason_en: "Maps the family to the correct local Fair Price Shop (Ration Shop) circle.",
+        reason_ta: "குடும்பத்தை அருகிலுள்ள நியாயவிலைக் கடை வட்டத்துடன் இணைக்க.",
+        format: "photocopy",
+        format_label_en: "Latest Bill Copy",
+        format_label_ta: "சமீபத்திய ரசீது நகல்",
+        note_en: "For rented house, registered rental agreement with owner's EB receipt is needed.",
+        note_ta: "வாடகை வீட்டிற்கு வாடகை ஒப்பந்தம் மற்றும் வீட்டு உரிமையாளரின் EB ரசீது.",
+        essential: true
+      },
+      {
+        id: "doc-rcard-3",
+        name_en: "Name Deletion Certificate / Surrender Certificate from Previous Card",
+        name_ta: "முந்தைய குடும்ப அட்டையிலிருந்து பெயர் நீக்கல் சான்றிதழ்",
+        category: "primary_proof",
+        reason_en: "Proof that married couple/members have been removed from parents' cards.",
+        reason_ta: "பெற்றோரின் அட்டையிலிருந்து பெயர் நீக்கப்பட்டதை நிரூபிக்கும் சான்று.",
+        format: "original_and_copy",
+        format_label_en: "Online Deletion Slip / Surrender Certificate",
+        format_label_ta: "இணைய பெயர் நீக்கல் ரசீது / சான்று",
+        note_en: "Crucial for newly married couples applying for their first independent card.",
+        note_ta: "புதிதாக திருமணமான தம்பதியருக்கு இது மிகவும் கட்டாயம்.",
+        essential: true
+      },
+      {
+        id: "doc-rcard-4",
+        name_en: "Gas Connection Details / Consumer Passbook Copy",
+        name_ta: "சமையல் எரிவாயு இணைப்பு விவரம் / நுகர்வோர் புத்தகம்",
+        category: "supporting_proof",
+        reason_en: "Determines kerosene quota entitlement (No gas = full kerosene, 1 cylinder = partial, 2 = nil).",
+        reason_ta: "மண்ணெண்ணெய் ஒதுக்கீடு அளவை முடிவு செய்ய (எரிவாயு சிலிண்டர் விவரம்).",
+        format: "photocopy",
+        format_label_en: "Gas Consumer Book Front Page Copy",
+        format_label_ta: "எரிவாயு புத்தக முதல் பக்க நகல்",
+        note_en: "Mention if no LPG connection exists to get full subsidised items.",
+        note_ta: "எரிவாயு இணைப்பு இல்லை எனில் விண்ணப்பத்தில் குறிப்பிடலாம்.",
+        essential: false
+      },
+      {
+        id: "doc-rcard-5",
+        name_en: "Family Head Photograph (Passphoto)",
+        name_ta: "குடும்பத் தலைவரின் பாஸ்போர்ட் அளவு புகைப்படம்",
+        category: "photographs",
+        reason_en: "Printed on the Smart Card front surface (traditionally female head of household).",
+        reason_ta: "ஸ்மார்ட் கார்டில் அச்சிடப்பட (குடும்பத் தலைவி படம்).",
+        format: "physical_photos",
+        format_label_en: "1 Clear Color Photo (White Background)",
+        format_label_ta: "1 தெளிவான வண்ணப் புகைப்படம்",
+        note_en: "In Tamil Nadu, adult woman is usually designated as family head.",
+        note_ta: "தமிழகத்தில் பொதுவாக குடும்பத்தின் மூத்த பெண்மணியே குடும்பத் தலைவர்.",
+        essential: true
+      }
+    ]
+  }
+];
+
+export const STATES_AND_DISTRICTS = {
+  "Tamil Nadu": [
+    "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri",
+    "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur",
+    "Krishnagiri", "Madurai", "Mayiladuthurai", "Nagapattinam", "Namakkal", "Nilgiris",
+    "Perambalur", "Pudukkottai", "Ramanathapuram", "Ranipet", "Salem", "Sivaganga",
+    "Tenkasi", "Thanjavur", "Theni", "Thoothukudi (Tuticorin)", "Tiruchirappalli",
+    "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur",
+    "Vellore", "Viluppuram", "Virudhunagar"
+  ],
+  "Karnataka": [
+    "Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Mangaluru (Dakshina Kannada)",
+    "Hubballi-Dharwad", "Belagavi", "Ballari", "Kalaburagi", "Shivamogga", "Tumakuru"
+  ],
+  "Kerala": [
+    "Thiruvananthapuram", "Kollam", "Pathanamthitta", "Alappuzha", "Kottayam",
+    "Idukki", "Ernakulam (Kochi)", "Thrissur", "Palakkad", "Malappuram", "Kozhikode",
+    "Wayanad", "Kannur", "Kasaragod"
+  ],
+  "Andhra Pradesh": [
+    "Visakhapatnam", "Vijayawada (NTR)", "Guntur", "Tirupati", "Kurnool", "Nellore"
+  ],
+  "Maharashtra": [
+    "Mumbai City", "Mumbai Suburban", "Pune", "Nagpur", "Thane", "Nashik", "Chhatrapati Sambhajinagar"
+  ],
+  "Delhi (NCT)": [
+    "Central Delhi", "New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"
+  ]
+};
+
+export const COMMON_QUESTIONS_AT_OFFICE = [
+  {
+    id: "q-1",
+    question_en: "Are any additional local verification documents needed from the VAO (Village Administrative Officer)?",
+    question_ta: "கிராம நிர்வாக அலுவலரிடம் (VAO) கூடுதல் கையொப்பம் அல்லது கள விசாரணை அறிக்கை தேவையா?",
+    tip_en: "For revenue certificates (Community, Income, Nativity), the VAO and Revenue Inspector must submit a field report.",
+    tip_ta: "வருவாய்த்துறை சான்றிதழ்களுக்கு VAO மற்றும் வருவாய் ஆய்வாளர் (RI) கள ஆய்வு அறிக்கை அவசியமானது."
+  },
+  {
+    id: "q-2",
+    question_en: "Will original documents be returned immediately after spot verification?",
+    question_ta: "நேரடி சரிபார்ப்பிற்குப் பிறகு அசல் ஆவணங்கள் உடனடியாக திருப்பித் தரப்படுமா?",
+    tip_en: "Government e-Seva desks only scan originals; do NOT surrender your original birth/marriage certificates unless instructed by gazetted officers.",
+    tip_ta: "இ-சேவை மையங்கள் அசலை ஸ்கேன் மட்டுமே செய்கின்றன; அசல் சான்றிதழ்களை அங்கே ஒப்படைக்க வேண்டாம்."
+  },
+  {
+    id: "q-3",
+    question_en: "What is the application tracking number (CAN / Ack Number) and portal URL?",
+    question_ta: "விண்ணப்ப கண்காணிப்பு எண் (CAN / Acknowledgement Number) மற்றும் இணைய முகவரி என்ன?",
+    tip_en: "Always collect the printed computer acknowledgement slip with application reference number (e.g., TN-REV-...).",
+    tip_ta: "விண்ணப்ப எண் கொண்ட கணினி ரசீதை கட்டாயம் பெற்றுக் கொள்ளவும்."
+  },
+  {
+    id: "q-4",
+    question_en: "Is an in-person physical appearance / biometric scan mandatory?",
+    question_ta: "விண்ணப்பதாரர் நேரில் ஆஜராக வேண்டுமா அல்லது கைரேகை பயோமெட்ரிக் பதிவு அவசியமா?",
+    tip_en: "Required for Aadhaar updates and Driving License tests, but usually not mandatory for basic revenue certificates.",
+    tip_ta: "ஆதார் மற்றும் ஓட்டுநர் உரிமத்திற்கு நேரடி வருகை தேவை; பிற சான்றிதழ்களுக்கு குடும்ப உறுப்பினர் விண்ணப்பிக்கலாம்."
+  },
+  {
+    id: "q-5",
+    question_en: "What is the official processing timeline under the Citizen Charter?",
+    question_ta: "குடிமக்கள் சாசனத்தின்படி சான்றிதழ் கிடைக்க எத்தனை நாட்கள் ஆகும்?",
+    tip_en: "Most revenue certificates have a statutory timeline of 15 to 30 days. Ask for escalation contacts if delayed.",
+    tip_ta: "பொதுவாக 15 முதல் 30 வேலை நாட்களுக்குள் சான்றிதழ் வழங்கப்பட வேண்டும்."
+  },
+  {
+    id: "q-6",
+    question_en: "What is the exact official government fee and mode of payment (Cash / UPI)?",
+    question_ta: "அரசு நிர்ணயித்த சரியான கட்டணம் எவ்வளவு மற்றும் அதை UPI மூலம் செலுத்தலாமா?",
+    tip_en: "Standard e-Seva fee is ₹60. The fee is printed on the computer receipt; never pay unreceipted cash.",
+    tip_ta: "நிலையான இ-சேவை கட்டணம் ₹60. ரசீதில் அச்சிடப்பட்ட தொகையை மட்டுமே செலுத்தவும்."
+  }
+];
+
+export const NEXT_STEPS_GUIDE = [
+  {
+    step: 1,
+    icon: "folder-check",
+    title_en: "Organize Document Folder (Originals + 2 Sets)",
+    title_ta: "ஆவணக் கோப்பை ஒழுங்கமைத்தல் (அசல் + 2 நகல் தொகுப்புகள்)",
+    desc_en: "Sort documents into two separate sets: 1 file containing verified originals, and 1 file containing self-attested photocopies with 2 recent passport size photos.",
+    desc_ta: "அசல் ஆவணங்களை ஒரு கோப்பிலும், சுய சான்றொப்பமிட்ட 2 நகல் தொகுப்புகளை மற்றொரு கோப்பிலும் பாதுகாப்பாக அடுக்கி வைக்கவும்."
+  },
+  {
+    step: 2,
+    icon: "map-pin",
+    title_en: "Locate Nearest Authorized e-Seva / TNeGA Center",
+    title_ta: "அருகிலுள்ள அரசு அங்கீகாரம் பெற்ற இ-சேவை மையத்தை கண்டறிதல்",
+    desc_en: "Visit your local Taluk Office, Municipality Office, or authorized Arasu e-Seva center (Cooperative Bank / PACCS center). Working hours are typically 10:00 AM - 5:30 PM.",
+    desc_ta: "வட்டாட்சியர் அலுவலகம், நகராட்சி அல்லது கூட்டுறவு சங்கங்களில் இயங்கும் அரசு இ-சேவை மையத்திற்கு காலை 10:00 முதல் மாலை 5:30-க்குள் செல்லவும்."
+  },
+  {
+    step: 3,
+    icon: "cash",
+    title_en: "Prepare Government Service Fee (Cash / UPI)",
+    title_ta: "அரசு சேவைக் கட்டணத்தை தயாராக வைத்திருங்கள் (பணம் / UPI)",
+    desc_en: "Keep ₹60 to ₹100 handy for revenue applications. Insist on a computer-generated transaction receipt displaying your CAN number.",
+    desc_ta: "விண்ணப்பக் கட்டணத்தை (சுமார் ₹60) தயாராக வைக்கவும். CAN எண் கொண்ட அதிகாரப்பூர்வ கணினி ரசீதை தவறாமல் பெறவும்."
+  },
+  {
+    step: 4,
+    icon: "device-mobile",
+    title_en: "Track SMS Notifications & Download Digital Certificate",
+    title_ta: "SMS அறிவிப்புகளை கண்காணித்து மின்னணு சான்றிதழை பதிவிறக்கவும்",
+    desc_en: "You will receive SMS alerts as your application moves from VAO -> RI -> Tahsildar. Once approved, download the digitally signed certificate online via TN e-District.",
+    desc_ta: "VAO மற்றும் வருவாய் ஆய்வாளர் ஆய்வுக்குப் பின் ஒப்புதல் பெற்றவுடன், டிஜிட்டல் கையொப்பமிட்ட சான்றிதழை இணையத்தில் பதிவிறக்கலாம்."
+  }
+];
