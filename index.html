@@ -22,7 +22,7 @@
             'baby': '👶', 'badge': '🎖', 'currency': '₹', 'home': '🏠', 'file-text': '📄',
             'academic-cap': '🎓', 'users': '👥', 'truck': '🚗', 'shopping-bag': '🛍',
             'map-pin': '📍', 'user': '👤', 'building': '🏢', 'zap': '⚡', 'alert-circle': '⚠',
-            'cpu': '⚙', 'trending-up': '📈'
+            'cpu': '⚙', 'trending-up': '📈', 'loader': '⏳', 'loader-2': '⏳'
           };
           document.querySelectorAll('i[data-lucide]').forEach(function(el) {
             var name = el.getAttribute('data-lucide');
@@ -436,9 +436,19 @@
               <p data-i18n="ai_assistant_subtitle">Your AI companion for government paperwork guidance</p>
             </div>
           </div>
-          <div class="disclaimer-badge">
-            <i data-lucide="shield-alert" style="width:12px;height:12px;"></i>
-            <span>Educational AI</span>
+          <div class="ai-header-right">
+            <div id="ai-backend-status" class="ai-status-badge">
+              <span class="status-dot"></span>
+              <span id="ai-backend-status-text">Checking Backend...</span>
+            </div>
+            <button type="button" id="clear-chat-btn" class="clear-chat-btn" title="Clear Chat History">
+              <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
+              <span data-i18n="clear_chat">Clear</span>
+            </button>
+            <div class="disclaimer-badge">
+              <i data-lucide="shield-alert" style="width:12px;height:12px;"></i>
+              <span>Educational AI</span>
+            </div>
           </div>
         </div>
 

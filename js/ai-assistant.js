@@ -1,20 +1,79 @@
 // Intelligent Conversational AI Engine for DocMate AI
 // Supports natural language in English, Tamil (தமிழ்), and Tanglish.
-// Strictly adheres to safety guardrails and educational disclaimers.
+// Connects to FastAPI Backend (/api/chat) with full offline reasoning fallback.
 
 export class DocMateAIAssistant {
   constructor(servicesData, currentLang = "en") {
     this.servicesData = servicesData;
     this.currentLang = currentLang;
     this.chatHistory = [];
+    this.backendUrl = window.location.protocol.startsWith('http')
+      ? window.location.origin
+      : 'http://127.0.0.1:8000';
+    this.isBackendOnline = false;
+    this.backendInfo = null;
   }
 
   setLanguage(lang) {
     this.currentLang = lang;
   }
 
-  // Common quick suggestion prompts depending on language
-  getSuggestions() {
+  clearHistory() {
+    this.chatHistory = [];
+  }
+
+  async checkBackendHealth() {
+    const candidatePorts = [8080, 8000, 5000];
+    const targets = [];
+    if (window.location.protocol.startsWith('http')) {
+      targets.push(window.location.origin);
+    }
+    candidatePorts.forEach(p => {
+      const origin = `http://127.0.0.1:${p}`;
+      if (!targets.includes(origin)) targets.push(origin);
+    });
+
+    for (const url of targets) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 1200);
+        const res = await fetch(`${url}/api/health`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.service && data.service.includes('DocMate')) {
+            this.backendUrl = url;
+            this.backendInfo = data;
+            this.isBackendOnline = true;
+            return this.backendInfo;
+          }
+        }
+      } catch (e) { /* try next candidate */ }
+    }
+    this.isBackendOnline = false;
+    this.backendInfo = null;
+    return null;
+  }
+
+  async getSuggestions() {
+    if (this.isBackendOnline) {
+      try {
+        const res = await fetch(`${this.backendUrl}/api/suggestions?lang=${this.currentLang}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.suggestions && data.suggestions.length > 0) {
+            return data.suggestions;
+          }
+        }
+      } catch (e) { /* fallback */ }
+    }
+
     if (this.currentLang === "ta") {
       return [
         "பிறப்புச் சான்றிதழ் பெற என்ன ஆவணங்கள் தேவை?",
@@ -35,13 +94,53 @@ export class DocMateAIAssistant {
     ];
   }
 
-  // Process natural language input
   async processQuery(userInput, currentContext = {}) {
-    const query = userInput.trim().toLowerCase();
-    
-    // Simulate natural AI thinking delay for realistic UX
-    await new Promise(resolve => setTimeout(resolve, 600));
+    const trimmed = (userInput || '').trim();
+    if (!trimmed) {
+      return {
+        text: this.currentLang === 'ta' ? 'தயவுசெய்து ஒரு கேள்வியைத் தட்டச்சு செய்யவும்.' : 'Please enter a question.',
+        followUp: null,
+        actionChips: [],
+        source: 'local'
+      };
+    }
 
+    this.chatHistory.push({ role: 'user', content: trimmed });
+
+    // 1. Try FastAPI backend first
+    if (this.isBackendOnline) {
+      try {
+        const res = await fetch(`${this.backendUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: trimmed,
+            history: this.chatHistory.slice(-6),
+            language: this.currentLang,
+            userContext: currentContext
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          this.chatHistory.push({ role: 'assistant', content: data.text });
+          return data;
+        }
+      } catch (err) {
+        console.warn('[DocMate AI] Backend call failed, reverting to local fallback:', err);
+        this.isBackendOnline = false;
+      }
+    }
+
+    // 2. Offline fallback
+    await new Promise(resolve => setTimeout(resolve, 350));
+    const fallback = this.processLocalQuery(trimmed);
+    this.chatHistory.push({ role: 'assistant', content: fallback.text });
+    return fallback;
+  }
+
+  processLocalQuery(userInput) {
+    const query = userInput.toLowerCase();
     const isTamil = this.currentLang === "ta" || this.detectTamil(userInput);
     const disclaimer = isTamil 
       ? "\n\n⚠️ *குறிப்பு: இது கல்வி வழிகாட்டுதல் மட்டுமே. உங்கள் உள்ளூர் வட்டாட்சியர் அல்லது இ-சேவை அலுவலகத்தில் இறுதி தேவைகளை சரிபார்க்கவும்.*"
@@ -60,7 +159,9 @@ export class DocMateAIAssistant {
 2. **பள்ளி மாற்றுச் சான்றிதழ் (TC):** உங்கள் பள்ளி மாற்றுச் சான்றிதழில் சாதி மற்றும் சமூகம் தெளிவாகக் குறிப்பிடப்பட்டிருக்க வேண்டும்.
 3. **நோட்டரி பிரமாணப் பத்திரம்:** தந்தையின் சான்றிதழ் கிடைக்காததற்கான காரணத்தைக் குறிப்பிட்டு வழக்கறிஞர்/நோட்டரி மூலம் உறுதிமொழி பத்திரம் பெற வேண்டும்.
 4. **கிராம நிர்வாக அலுவலர் (VAO) களவிசாரணை:** VAO மற்றும் வருவாய் ஆய்வாளர் உங்கள் பூர்வீகம் குறித்து களவிசாரணை மேற்கொண்டு அறிக்கை அளிப்பார்கள்.${disclaimer}`,
-          followUp: "உங்களுக்கு பள்ளி மாற்றுச் சான்றிதழ் (TC) நகல் ஏற்கனவே உள்ளதா?"
+          followUp: "உங்களுக்கு பள்ளி மாற்றுச் சான்றிதழ் (TC) நகல் ஏற்கனவே உள்ளதா?",
+          actionChips: [{ label: "📋 சாதிச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "community-certificate" }],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -70,7 +171,9 @@ export class DocMateAIAssistant {
 2. **School Transfer Certificate (TC):** The applicant's school TC or 10th marksheet must have the caste/community category clearly recorded.
 3. **Notarized Lineage Affidavit:** Submit a sworn affidavit explaining the genuine non-availability of the father's document with a family genealogical tree.
 4. **VAO Field Verification:** The Village Administrative Officer (VAO) and Revenue Inspector (RI) will conduct a local resident enquiry.${disclaimer}`,
-          followUp: "Do you have your school Transfer Certificate (TC) ready?"
+          followUp: "Do you have your school Transfer Certificate (TC) ready?",
+          actionChips: [{ label: "📋 Open Community Certificate Checklist", action: "open_service", serviceId: "community-certificate" }],
+          source: "browser-engine"
         };
       }
     }
@@ -84,7 +187,9 @@ export class DocMateAIAssistant {
 • தகவல் தொழில்நுட்பச் சட்டம் (IT Act, Rule 9A) படி, DigiLocker மூலம் சரிபார்க்கப்பட்ட டிஜிட்டல் ஆவணங்கள் அசல் ஆவணங்களுக்கு இணையாக சட்டப்பூர்வமாக அங்கீகரிக்கப்பட்டவை.
 • போக்குவரத்து போலீஸ் மற்றும் RTO அலுவலகங்களில் DigiLocker ஓட்டுநர் உரிமம் மற்றும் RC புத்தகம் அதிகாரப்பூர்வமாக ஏற்கப்படுகிறது.
 • **இ-சேவை மையங்களுக்கு குறிப்பு:** இ-சேவை மையங்களில் ஆவணங்களை கணினியில் ஸ்கேன் செய்ய வேண்டியிருப்பதால், உங்களுடன் காகித நகல்களையும் (Photocopies) எடுத்துச் செல்வது உங்கள் நேரத்தை மிச்சப்படுத்தும்.${disclaimer}`,
-          followUp: "நீங்கள் எந்த சேவைக்காக விண்ணப்பிக்க திட்டமிட்டுள்ளீர்கள்?"
+          followUp: "நீங்கள் எந்த சேவைக்காக விண்ணப்பிக்க திட்டமிட்டுள்ளீர்கள்?",
+          actionChips: [],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -93,7 +198,9 @@ export class DocMateAIAssistant {
 • Under Rule 9A of the IT Rules 2016, digitally verified documents via DigiLocker (Aadhaar, Driving License, Vehicle RC, CBSE marksheet) are legally on par with original physical documents.
 • RTO and Traffic authorities officially accept DigiLocker for vehicle documents.
 • **Practical Tip for e-Seva:** Because operators scan physical documents into the portal scanner, keeping 2 paper photocopies will prevent delays at the counter.${disclaimer}`,
-          followUp: "Which specific service are you preparing documents for?"
+          followUp: "Which specific service are you preparing documents for?",
+          actionChips: [],
+          source: "browser-engine"
         };
       }
     }
@@ -110,7 +217,9 @@ export class DocMateAIAssistant {
 4. **திருமணச் சான்றிதழ் (இருப்பின்):** பெற்றோரின் திருமண உறுதிக்கு.
 
 📌 **காலக்கெடு:** குழந்தை பிறந்த 21 நாட்களுக்குள் பதிவு செய்வது இலவசம். 1 வருடத்திற்கு மேல் தாமதமானால் வருவாய் கோட்டாட்சியர் (RDO) அல்லது நீதிமன்ற ஆணை தேவைப்படும்.${disclaimer}`,
-          followUp: "குழந்தை பிறந்து 21 நாட்களுக்குள் உள்ளதா அல்லது 1 வருடத்திற்கு மேலாகிவிட்டதா?"
+          followUp: "குழந்தை பிறந்து 21 நாட்களுக்குள் உள்ளதா அல்லது 1 வருடத்திற்கு மேலாகிவிட்டதா?",
+          actionChips: [{ label: "📋 பிறப்புச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "birth-certificate" }],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -122,7 +231,9 @@ export class DocMateAIAssistant {
 4. **Marriage Certificate (Optional but helpful):** Supporting parental relationship proof.
 
 📌 **Timeline Rule:** Registration within 21 days is direct and straightforward. If registration is delayed beyond 1 year, an order from the Revenue Divisional Officer (RDO) or Magistrate is mandated by law.${disclaimer}`,
-          followUp: "Was the child born within the last 21 days, or is this a delayed registration?"
+          followUp: "Was the child born within the last 21 days, or is this a delayed registration?",
+          actionChips: [{ label: "📋 Open Birth Certificate Checklist", action: "open_service", serviceId: "birth-certificate" }],
+          source: "browser-engine"
         };
       }
     }
@@ -140,7 +251,9 @@ export class DocMateAIAssistant {
   3. ஆதார் அட்டை.
   4. சொத்து வரி அல்லது மின்கட்டண ரசீது.
 • **அரசு கட்டணம்:** அரசு இ-சேவை மையத்தில் ₹60 மட்டுமே.${disclaimer}`,
-          followUp: "விண்ணப்பதாரர் மாத சம்பளம் பெறுபவரா அல்லது சுயதொழில் செய்பவரா?"
+          followUp: "விண்ணப்பதாரர் மாத சம்பளம் பெறுபவரா அல்லது சுயதொழில் செய்பவரா?",
+          actionChips: [{ label: "📋 வருமானச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "income-certificate" }],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -153,7 +266,9 @@ export class DocMateAIAssistant {
   3. Applicant's Aadhaar Card.
   4. Recent Electricity Bill or Property Tax Receipt.
 • **Official Fee:** Standard e-Seva service charge is ₹60.${disclaimer}`,
-          followUp: "Are you applying as a salaried employee or self-employed/agricultural earner?"
+          followUp: "Are you applying as a salaried employee or self-employed/agricultural earner?",
+          actionChips: [{ label: "📋 Open Income Certificate Checklist", action: "open_service", serviceId: "income-certificate" }],
+          source: "browser-engine"
         };
       }
     }
@@ -169,7 +284,9 @@ export class DocMateAIAssistant {
 • **ஓட்டுநர் உரிமம் (RTO):** LLR கட்டணம் சுமார் ₹200 (வாகன வகையைப் பொறுத்து).
 
 ⚠️ **முக்கிய அறிவுரை:** கட்டணம் செலுத்தியவுடன் கணினியில் அச்சிடப்பட்ட ரசீதை (Acknowledgement Slip) பெறவும். கூடுதல் கட்டணம் கோரப்பட்டால் மாவட்ட ஆட்சியர் அலுவலக உதவி மையத்தில் தெரிவிக்கலாம்.${disclaimer}`,
-          followUp: "உங்களுக்கு கணினி ரசீது பெறுவதில் ஏதேனும் சந்தேகம் உள்ளதா?"
+          followUp: "உங்களுக்கு கணினி ரசீது பெறுவதில் ஏதேனும் சந்தேகம் உள்ளதா?",
+          actionChips: [],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -180,7 +297,9 @@ export class DocMateAIAssistant {
 • **Driving License (RTO):** Approximately ₹200 for LLR test (depending on class of vehicle).
 
 ⚠️ **Important Advice:** Always insist on the printed computer acknowledgement receipt with the transaction ID. Never pay extra cash without a printed receipt.${disclaimer}`,
-          followUp: "Would you like help calculating the exact readiness of your documents?"
+          followUp: "Would you like help calculating the exact readiness of your documents?",
+          actionChips: [],
+          source: "browser-engine"
         };
       }
     }
@@ -196,7 +315,9 @@ export class DocMateAIAssistant {
 3. **வாடகை ஒப்பந்தம் (Rental Agreement):** முத்திரைத்தாளில் பதிவு செய்யப்பட்ட நடப்பு வாடகை ஒப்பந்தம்.
 4. **வங்கி கணக்குப் புத்தகம் (Bank Passbook):** புகைப்படம் மற்றும் முகவரியுடன் கூடிய தேசியமயமாக்கப்பட்ட வங்கியின் பாஸ்புக்.
 5. **வாக்காளர் அடையாள அட்டை (Voter ID) / பாஸ்போர்ட்.**${disclaimer}`,
-          followUp: "இவற்றில் எந்த மாற்று ஆவணம் தற்போது உங்களிடம் உள்ளது?"
+          followUp: "இவற்றில் எந்த மாற்று ஆவணம் தற்போது உங்களிடம் உள்ளது?",
+          actionChips: [],
+          source: "browser-engine"
         };
       } else {
         return {
@@ -207,7 +328,9 @@ export class DocMateAIAssistant {
 3. **Registered Rental Agreement:** If staying in rented accommodation, along with the landlord's recent EB or property tax receipt.
 4. **Nationalized Bank Passbook:** First page stamped by the bank branch showing photograph and current residential address.
 5. **Voter ID Card (EPIC) or Indian Passport.**${disclaimer}`,
-          followUp: "Which of these alternate address proofs do you currently possess?"
+          followUp: "Which of these alternate address proofs do you currently possess?",
+          actionChips: [],
+          source: "browser-engine"
         };
       }
     }
@@ -230,7 +353,9 @@ ${docsList}
 • **வழங்கும் துறை:** ${service.issuing_authority_ta}
 • **தோராயமான காலம்:** ${service.processing_days}
 • **அரசு கட்டணம்:** ${service.standard_fee}${disclaimer}`,
-            followUp: "இந்த ஆவணங்கள் அனைத்தும் உங்களிடம் உள்ளதா? சரிபார்ப்பு பட்டியலை உருவாக்க 'Find Required Documents' பொத்தானை கிளிக் செய்யலாம்."
+            followUp: `இந்த ஆவணங்கள் உங்களிடம் உள்ளதா? சரிபார்க்க '${service.name_ta}' பட்டியலை திறக்கலாம்.`,
+            actionChips: [{ label: `📋 ${service.name_ta} சரிபார்ப்பு பட்டியல்`, action: "open_service", serviceId: service.id }],
+            source: "browser-engine"
           };
         } else {
           return {
@@ -241,7 +366,9 @@ ${docsList}
 • **Issuing Authority:** ${service.issuing_authority_en}
 • **Standard Timeline:** ${service.processing_days}
 • **Official Fee:** ${service.standard_fee}${disclaimer}`,
-            followUp: "Do you have all these documents ready, or would you like to review alternative proofs?"
+            followUp: `Do you have all these documents ready, or would you like to review alternative proofs?`,
+            actionChips: [{ label: `📋 Open ${service.name_en} Checklist`, action: "open_service", serviceId: service.id }],
+            source: "browser-engine"
           };
         }
       }
@@ -258,7 +385,13 @@ ${docsList}
 3. உங்கள் பகுதியில் உள்ள அங்கீகரிக்கப்பட்ட அரசு இ-சேவை மையத்தை அணுகினால் எளிதில் விண்ணப்பிக்கலாம்.
 
 உங்கள் கேள்விக்கு மேலும் துல்லியமான விளக்கம் பெற, நீங்கள் எந்த சான்றிதழைப் பற்றி கேட்கிறீர்கள் (எ.கா: பிறப்பு, சாதி, வருமானம், இருப்பிடம் அல்லது ஓட்டுநர் உரிமம்) என்பதைக் குறிப்பிடவும்.${disclaimer}`,
-        followUp: "நீங்கள் எந்த குறிப்பிட்ட அரசு சேவையை நாட விரும்புகிறீர்கள்?"
+        followUp: "நீங்கள் எந்த குறிப்பிட்ட அரசு சேவையை நாட விரும்புகிறீர்கள்?",
+        actionChips: [
+          { label: "📋 பிறப்புச் சான்றிதழ்", action: "open_service", serviceId: "birth-certificate" },
+          { label: "📋 சாதிச் சான்றிதழ்", action: "open_service", serviceId: "community-certificate" },
+          { label: "📋 வருமானச் சான்றிதழ்", action: "open_service", serviceId: "income-certificate" }
+        ],
+        source: "browser-engine"
       };
     } else {
       return {
@@ -269,7 +402,13 @@ Here is general practical advice when preparing for government paperwork:
 2. Keep **3 recent passport-size photographs** with a plain background.
 3. Ensure your name and Date of Birth match across your Aadhaar, school marksheet, and ration card to prevent rejections.
 4. For specific document requirements, tell me which certificate you need (e.g. Birth, Community, Income, Residence, Driving License, or Ration Card).${disclaimer}`,
-        followUp: "Which specific service or document would you like me to inspect for you?"
+        followUp: "Which specific service or document would you like me to inspect for you?",
+        actionChips: [
+          { label: "📋 Birth Certificate", action: "open_service", serviceId: "birth-certificate" },
+          { label: "📋 Community Certificate", action: "open_service", serviceId: "community-certificate" },
+          { label: "📋 Income Certificate", action: "open_service", serviceId: "income-certificate" }
+        ],
+        source: "browser-engine"
       };
     }
   }

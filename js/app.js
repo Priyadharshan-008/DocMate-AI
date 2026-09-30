@@ -1164,13 +1164,74 @@
     constructor(services, lang) {
       this.servicesData = services;
       this.currentLang = lang;
+      this.chatHistory = [];
+      this.backendUrl = window.location.protocol.startsWith('http') 
+        ? window.location.origin 
+        : 'http://127.0.0.1:8000';
+      this.isBackendOnline = false;
+      this.backendInfo = null;
     }
 
     setLanguage(lang) {
       this.currentLang = lang;
     }
 
-    getSuggestions() {
+    clearHistory() {
+      this.chatHistory = [];
+    }
+
+    async checkBackendHealth() {
+      const candidatePorts = [8080, 8000, 5000];
+      const targets = [];
+      if (window.location.protocol.startsWith('http')) {
+        targets.push(window.location.origin);
+      }
+      candidatePorts.forEach(p => {
+        const origin = `http://127.0.0.1:${p}`;
+        if (!targets.includes(origin)) targets.push(origin);
+      });
+
+      for (const url of targets) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 1200);
+          const res = await fetch(`${url}/api/health`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
+          });
+          clearTimeout(timer);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.service && data.service.includes('DocMate')) {
+              this.backendUrl = url;
+              this.backendInfo = data;
+              this.isBackendOnline = true;
+              return this.backendInfo;
+            }
+          }
+        } catch (e) { /* try next candidate */ }
+      }
+      this.isBackendOnline = false;
+      this.backendInfo = null;
+      return null;
+    }
+
+    async getSuggestions() {
+      if (this.isBackendOnline) {
+        try {
+          const res = await fetch(`${this.backendUrl}/api/suggestions?lang=${this.currentLang}`, {
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.suggestions && data.suggestions.length > 0) {
+              return data.suggestions;
+            }
+          }
+        } catch (e) { /* fallback to local */ }
+      }
+
       if (this.currentLang === "ta") {
         return [
           "பிறப்புச் சான்றிதழ் பெற என்ன ஆவணங்கள் தேவை?",
@@ -1191,125 +1252,216 @@
       ];
     }
 
-    async processQuery(userInput) {
-      const query = userInput.trim().toLowerCase();
-      await new Promise(r => setTimeout(r, 400));
+    async processQuery(userInput, currentContext = {}) {
+      const trimmed = (userInput || '').trim();
+      if (!trimmed) {
+        return {
+          text: this.currentLang === 'ta' ? 'தயவுசெய்து ஒரு கேள்வியைத் தட்டச்சு செய்யவும்.' : 'Please enter a question.',
+          followUp: null,
+          actionChips: [],
+          source: 'local'
+        };
+      }
 
+      this.chatHistory.push({ role: 'user', content: trimmed });
+
+      // 1. Try FastAPI backend first
+      if (this.isBackendOnline) {
+        try {
+          const res = await fetch(`${this.backendUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: trimmed,
+              history: this.chatHistory.slice(-6),
+              language: this.currentLang,
+              userContext: currentContext
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            this.chatHistory.push({ role: 'assistant', content: data.text });
+            return data;
+          }
+        } catch (err) {
+          console.warn('[DocMate AI] Backend call failed, reverting to local fallback:', err);
+          this.isBackendOnline = false;
+        }
+      }
+
+      // 2. Offline High-Precision Reasoning Fallback
+      await new Promise(r => setTimeout(r, 350));
+      const fallbackResult = this.processLocalQuery(trimmed);
+      this.chatHistory.push({ role: 'assistant', content: fallbackResult.text });
+      return fallbackResult;
+    }
+
+    processLocalQuery(userInput) {
+      const query = userInput.toLowerCase();
       const isTamil = this.currentLang === "ta" || /[\u0B80-\u0BFF]/.test(userInput);
       const disclaimer = isTamil 
         ? "\n\n⚠️ *குறிப்பு: இது கல்வி வழிகாட்டுதல் மட்டுமே. உங்கள் உள்ளூர் வட்டாட்சியர் அல்லது இ-சேவை அலுவலகத்தில் இறுதி தேவைகளை சரிபார்க்கவும்.*"
         : "\n\n⚠️ *Note: This is an educational guide. Please verify the final requirements with your local Taluk / e-Seva office.*";
 
+      // Missing Father's Community Certificate
       if (query.includes("father") || query.includes("தந்தை") || query.includes("appa") || (query.includes("community") && (query.includes("without") || query.includes("miss") || query.includes("illai")))) {
         if (isTamil) {
           return {
             text: `உங்கள் தந்தையின் சாதிச் சான்றிதழ் இல்லையென்றாலும் சாதிச் சான்றிதழ் பெற வழிமுறைகள் உள்ளன:\n\n1. **மாற்று குடும்ப ஆவணங்கள்:** தாயார், உடன்பிறந்த சகோதரர்/சகோதரி அல்லது தந்தையின் சகோதரரின் சான்றிதழ்.\n2. **பள்ளி TC:** விண்ணப்பதாரரின் மாற்றுச் சான்றிதழில் சாதி பதிவு செய்யப்பட்டிருக்க வேண்டும்.\n3. **நோட்டரி பிரமாணப் பத்திரம்:** தந்தையின் சான்றிதழ் இல்லாத காரணத்தை விளக்கும் உறுதிமொழி பத்திரம்.\n4. **VAO களவிசாரணை:** கிராம நிர்வாக அலுவலர் பூர்வீக விசாரணை நடத்தி அறிக்கை தருவார்.${disclaimer}`,
-            followUp: "உங்களுக்கு பள்ளி மாற்றுச் சான்றிதழ் (TC) நகல் ஏற்கனவே உள்ளதா?"
+            followUp: "உங்களுக்கு பள்ளி மாற்றுச் சான்றிதழ் (TC) நகல் ஏற்கனவே உள்ளதா?",
+            actionChips: [{ label: "📋 சாதிச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "community-certificate" }],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `If your father's Community Certificate is not available, here are the accepted official alternative routes:\n\n1. **Immediate Family Proof:** Mother's, biological siblings', or paternal uncle's community certificate.\n2. **School Transfer Certificate (TC):** Applicant's TC with caste/community category recorded.\n3. **Notarized Lineage Affidavit:** Sworn affidavit explaining non-availability with family genealogical tree.\n4. **VAO Field Verification:** The Village Administrative Officer will conduct a local enquiry.${disclaimer}`,
-            followUp: "Do you have your school Transfer Certificate (TC) ready?"
+            followUp: "Do you have your school Transfer Certificate (TC) ready?",
+            actionChips: [{ label: "📋 Open Community Certificate Checklist", action: "open_service", serviceId: "community-certificate" }],
+            source: "browser-engine"
           };
         }
       }
 
+      // DigiLocker
       if (query.includes("digilocker") || query.includes("டிஜிலாக்கர்") || query.includes("digital copy") || query.includes("soft copy")) {
         if (isTamil) {
           return {
             text: `DigiLocker ஆவணங்கள் குறித்து தெரிந்து கொள்ள வேண்டியவை:\n\n• IT Act (Rule 9A) படி DigiLocker மூலம் சரிபார்க்கப்பட்ட டிஜிட்டல் ஆவணங்கள் அசல் ஆவணங்களுக்கு இணையாக சட்டப்பூர்வமாக அங்கீகரிக்கப்பட்டவை.\n• RTO மற்றும் போக்குவரத்து காவல்துறை DigiLocker ஆவணங்களை அதிகாரப்பூர்வமாக ஏற்கிறது.\n• **இ-சேவை மையங்களுக்கு குறிப்பு:** கணினியில் ஸ்கேன் செய்ய வேண்டியிருப்பதால், உங்களுடன் காகித நகல்களையும் எடுத்துச் செல்வது நேரத்தை மிச்சப்படுத்தும்.${disclaimer}`,
-            followUp: "நீங்கள் எந்த சேவைக்காக விண்ணப்பிக்க திட்டமிட்டுள்ளீர்கள்?"
+            followUp: "நீங்கள் எந்த சேவைக்காக விண்ணப்பிக்க திட்டமிட்டுள்ளீர்கள்?",
+            actionChips: [],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `Yes! Here is how DigiLocker is treated at government offices:\n\n• Under Rule 9A of the IT Rules 2016, digitally verified documents via DigiLocker are legally on par with original physical documents.\n• RTO officially accepts DigiLocker for vehicle documents.\n• **Tip for e-Seva:** Because operators scan physical documents into the portal scanner, keeping 2 paper photocopies will prevent counter delays.${disclaimer}`,
-            followUp: "Which specific service are you preparing documents for?"
+            followUp: "Which specific service are you preparing documents for?",
+            actionChips: [],
+            source: "browser-engine"
           };
         }
       }
 
+      // Birth Certificate
       if (query.includes("birth") || query.includes("பிறப்பு") || query.includes("pirappu") || query.includes("baby")) {
         if (isTamil) {
           return {
             text: `பிறப்புச் சான்றிதழ் பெற பொதுவாகத் தேவைப்படும் முக்கிய ஆவணங்கள்:\n\n1. **மருத்துவமனை பிறப்பு அறிக்கை (Discharge Summary / Form 1):** மருத்துவமனையால் வழங்கப்பட்ட அசல் அறிக்கை.\n2. **பெற்றோரின் ஆதார் அட்டைகள்:** தாய் மற்றும் தந்தை இருவரின் சுய சான்றொப்பமிட்ட நகல்கள்.\n3. **முகவரி சான்று / குடும்ப அட்டை:** தற்போதைய வசிப்பிடத்தை உறுதி செய்ய.\n4. **திருமணச் சான்றிதழ் (இருப்பின்).**\n\n📌 *குழந்தை பிறந்து 21 நாட்களுக்குள் பதிவு செய்வது இலவசம். 1 வருடத்திற்கு மேல் தாமதமானால் RDO உத்தரவு தேவை.*${disclaimer}`,
-            followUp: "குழந்தை பிறந்து 21 நாட்களுக்குள் உள்ளதா அல்லது 1 வருடத்திற்கு மேலாகிவிட்டதா?"
+            followUp: "குழந்தை பிறந்து 21 நாட்களுக்குள் உள்ளதா அல்லது 1 வருடத்திற்கு மேலாகிவிட்டதா?",
+            actionChips: [{ label: "📋 பிறப்புச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "birth-certificate" }],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `For a Birth Certificate, you typically need the following verified documents:\n\n1. **Hospital Discharge Report / Form 1:** Stamped by hospital medical officer.\n2. **Both Parents' Aadhaar Cards:** Self-attested copies (bring originals for spot check).\n3. **Address Proof / Smart Ration Card:** Proving residence in the registrar jurisdiction.\n4. **Marriage Certificate (Optional but helpful).**\n\n📌 *Registration within 21 days is direct. If delayed beyond 1 year, an RDO/Magistrate order is required.*${disclaimer}`,
-            followUp: "Was the child born within the last 21 days, or is this a delayed registration?"
+            followUp: "Was the child born within the last 21 days, or is this a delayed registration?",
+            actionChips: [{ label: "📋 Open Birth Certificate Checklist", action: "open_service", serviceId: "birth-certificate" }],
+            source: "browser-engine"
           };
         }
       }
 
+      // Income Certificate
       if (query.includes("income") || query.includes("வருமானம்") || query.includes("varumanam") || query.includes("validity") || query.includes("செல்லுபடி")) {
         if (isTamil) {
           return {
             text: `வருமானச் சான்றிதழ் பற்றிய முக்கிய தகவல்கள்:\n\n• **செல்லுபடி காலம்:** தமிழகத்தில் வருமானச் சான்றிதழ் வழக்கமாக 6 மாதங்கள் அல்லது நடப்பு நிதியாண்டுக்கு (March 31 வரை) மட்டுமே செல்லும்.\n• **தேவையான ஆவணங்கள்:** சம்பள ரசீது / வருமான உறுதிமொழி பத்திரம், குடும்ப அட்டை, ஆதார் அட்டை, சொத்து வரி அல்லது மின்கட்டண ரசீது.\n• **அரசு கட்டணம்:** அரசு இ-சேவை மையத்தில் ₹60 மட்டுமே.${disclaimer}`,
-            followUp: "விண்ணப்பதாரர் மாத சம்பளம் பெறுபவரா அல்லது சுயதொழில் செய்பவரா?"
+            followUp: "விண்ணப்பதாரர் மாத சம்பளம் பெறுபவரா அல்லது சுயதொழில் செய்பவரா?",
+            actionChips: [{ label: "📋 வருமானச் சான்றிதழ் சரிபார்ப்பு பட்டியல்", action: "open_service", serviceId: "income-certificate" }],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `Key requirements & validity for an Income Certificate:\n\n• **Validity Period:** In most states, an Income Certificate is valid for 6 months or until March 31 of the financial year.\n• **Checklist:** Salary Slip or Notarized Income Affidavit, Smart Family Ration Card, Aadhaar Card, Recent EB bill / Property tax receipt.\n• **Official Fee:** Standard e-Seva service charge is ₹60.${disclaimer}`,
-            followUp: "Are you applying as a salaried employee or self-employed earner?"
+            followUp: "Are you applying as a salaried employee or self-employed earner?",
+            actionChips: [{ label: "📋 Open Income Certificate Checklist", action: "open_service", serviceId: "income-certificate" }],
+            source: "browser-engine"
           };
         }
       }
 
+      // Fees
       if (query.includes("fee") || query.includes("charge") || query.includes("cost") || query.includes("கட்டணம்") || query.includes("kattanam") || query.includes("panam")) {
         if (isTamil) {
           return {
             text: `அரசு இ-சேவை மைய கட்டண விவரங்கள்:\n\n• **நிலையான இ-சேவை கட்டணம்:** சாதி, வருமானம், இருப்பிடம், முதல் பட்டதாரி, வாரிசுச் சான்றிதழ்களுக்கு அரசு நிர்ணயித்த கட்டணம் **₹60 மட்டுமே**.\n• **ஸ்மார்ட் ரேஷன் கார்டு:** அட்டை அச்சிடும் கட்டணம் சுமார் ₹20 - ₹30.\n• **ஓட்டுநர் உரிமம் (RTO):** LLR கட்டணம் சுமார் ₹200.\n\n⚠️ எப்போதும் கணினியில் அச்சிடப்பட்ட அதிகாரப்பூர்வ ரசீதை (Acknowledgement Slip) பெற்றுக் கொள்ளுங்கள்.${disclaimer}`,
-            followUp: "உங்களுக்கு கணினி ரசீது பெறுவதில் ஏதேனும் சந்தேகம் உள்ளதா?"
+            followUp: "உங்களுக்கு கணினி ரசீது பெறுவதில் ஏதேனும் சந்தேகம் உள்ளதா?",
+            actionChips: [],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `Official Government & e-Seva Fee Structure:\n\n• **Standard Revenue Certificates:** Authorized fee at Arasu e-Seva counters is **₹60 only**.\n• **Smart Ration Card:** ₹20 - ₹30 for PVC card printing.\n• **Driving License (RTO):** ~₹200 for LLR test.\n\n⚠️ Always insist on the printed computer acknowledgement slip with your CAN / reference number.${disclaimer}`,
-            followUp: "Would you like help calculating the exact readiness of your documents?"
+            followUp: "Would you like help calculating the exact readiness of your documents?",
+            actionChips: [],
+            source: "browser-engine"
           };
         }
       }
 
+      // Address proof
       if (query.includes("address proof") || query.includes("no ration") || query.includes("ration card illai") || query.includes("முகவரி சான்று")) {
         if (isTamil) {
           return {
             text: `ஸ்மார்ட் ரேஷன் கார்டு இல்லையெனில் ஏற்றுக்கொள்ளப்படும் மாற்று முகவரி சான்றுகள்:\n\n1. **ஆதார் அட்டை:** தற்போதைய சரியான முகவரியுடன் கூடிய ஆதார் அட்டை.\n2. **மின்கட்டண ரசீது (EB Bill):** சமீபத்திய 3 மாதங்களுக்குள் உள்ள ரசீது.\n3. **வாடகை ஒப்பந்தம்:** முத்திரைத்தாளில் பதிவு செய்யப்பட்ட நடப்பு ஒப்பந்தம்.\n4. **வங்கி கணக்குப் புத்தகம் (Bank Passbook):** முகவரியுடன் கூடிய வங்கி பாஸ்புக்.\n5. **வாக்காளர் அட்டை (Voter ID) / பாஸ்போர்ட்.**${disclaimer}`,
-            followUp: "இவற்றில் எந்த மாற்று ஆவணம் தற்போது உங்களிடம் உள்ளது?"
+            followUp: "இவற்றில் எந்த மாற்று ஆவணம் தற்போது உங்களிடம் உள்ளது?",
+            actionChips: [],
+            source: "browser-engine"
           };
         } else {
           return {
             text: `If you do not have a Ration Card, here are recognized alternative proofs of address:\n\n1. **Aadhaar Card:** With current address.\n2. **Electricity Bill (EB):** Recent bill within 3 months.\n3. **Registered Rental Agreement:** Along with landlord's EB receipt.\n4. **Nationalized Bank Passbook:** First page stamped with current address.\n5. **Voter ID Card (EPIC) or Indian Passport.**${disclaimer}`,
-            followUp: "Which of these alternate address proofs do you currently possess?"
+            followUp: "Which of these alternate address proofs do you currently possess?",
+            actionChips: [],
+            source: "browser-engine"
           };
         }
       }
 
+      // General service matching
       for (const service of this.servicesData) {
         if (query.includes(service.id) || query.includes(service.name_en.toLowerCase()) || query.includes(service.name_ta)) {
           const docsList = service.documents.map((d, i) => `${i + 1}. **${isTamil ? d.name_ta : d.name_en}** (${isTamil ? d.format_label_ta : d.format_label_en})`).join("\n");
           if (isTamil) {
             return {
               text: `**${service.name_ta}** பெறுவதற்கான முக்கிய ஆவணங்களின் பட்டியல்:\n\n${docsList}\n\n• **வழங்கும் துறை:** ${service.issuing_authority_ta}\n• **தோராயமான காலம்:** ${service.processing_days}\n• **அரசு கட்டணம்:** ${service.standard_fee}${disclaimer}`,
-              followUp: "இந்த ஆவணங்கள் உங்களிடம் உள்ளதா? சரிபார்க்க 'Find Required Documents' பொத்தானை அழுத்தவும்."
+              followUp: `இந்த ஆவணங்கள் உங்களிடம் உள்ளதா? சரிபார்க்க '${service.name_ta}' பட்டியலை திறக்கலாம்.`,
+              actionChips: [{ label: `📋 ${service.name_ta} சரிபார்ப்பு பட்டியல்`, action: "open_service", serviceId: service.id }],
+              source: "browser-engine"
             };
           } else {
             return {
               text: `Here are the primary documents required for **${service.name_en}**:\n\n${docsList}\n\n• **Issuing Authority:** ${service.issuing_authority_en}\n• **Standard Timeline:** ${service.processing_days}\n• **Official Fee:** ${service.standard_fee}${disclaimer}`,
-              followUp: "Do you have all these documents ready, or would you like to review alternative proofs?"
+              followUp: `Do you have all these documents ready, or would you like to review alternative proofs?`,
+              actionChips: [{ label: `📋 Open ${service.name_en} Checklist`, action: "open_service", serviceId: service.id }],
+              source: "browser-engine"
             };
           }
         }
       }
 
+      // General fallback
       if (isTamil) {
         return {
           text: `உங்கள் கேள்வி எனக்குப் புரிந்தது: "${userInput}".\n\nஅரசு ஆவணங்கள் குறித்த பொதுவான ஆலோசனைகள்:\n1. அசல் ஆவணங்களுடன் குறைந்தது 2 செட் சுய சான்றொப்பமிட்ட நகல்களை (Self-Attested Photocopies) தயாராக வைத்திருங்கள்.\n2. 3 சமீபத்திய பாஸ்போர்ட் அளவு வண்ணப் புகைப்படங்களை கையில் வைத்திருங்கள்.\n3. உங்கள் பகுதியில் உள்ள அங்கீகரிக்கப்பட்ட அரசு இ-சேவை மையத்தை அணுகினால் எளிதில் விண்ணப்பிக்கலாம்.${disclaimer}`,
-          followUp: "நீங்கள் எந்த குறிப்பிட்ட அரசு சேவையை நாட விரும்புகிறீர்கள்?"
+          followUp: "நீங்கள் எந்த குறிப்பிட்ட அரசு சேவையை நாட விரும்புகிறீர்கள்?",
+          actionChips: [
+            { label: "📋 பிறப்புச் சான்றிதழ்", action: "open_service", serviceId: "birth-certificate" },
+            { label: "📋 சாதிச் சான்றிதழ்", action: "open_service", serviceId: "community-certificate" },
+            { label: "📋 வருமானச் சான்றிதழ்", action: "open_service", serviceId: "income-certificate" }
+          ],
+          source: "browser-engine"
         };
       } else {
         return {
           text: `Thank you for your question: "${userInput}".\n\nGeneral practical advice for government paperwork:\n1. Always carry your **Original Documents** along with **2 sets of Self-Attested Photocopies**.\n2. Keep **3 recent passport-size photographs** ready.\n3. Ensure your name and Date of Birth match across your Aadhaar, school marksheet, and ration card.\n4. For specific document requirements, select a certificate from the Services menu.${disclaimer}`,
-          followUp: "Which specific service or document would you like me to inspect for you?"
+          followUp: "Which specific service or document would you like me to inspect for you?",
+          actionChips: [
+            { label: "📋 Birth Certificate", action: "open_service", serviceId: "birth-certificate" },
+            { label: "📋 Community Certificate", action: "open_service", serviceId: "community-certificate" },
+            { label: "📋 Income Certificate", action: "open_service", serviceId: "income-certificate" }
+          ],
+          source: "browser-engine"
         };
       }
     }
@@ -1358,6 +1510,7 @@
       const hash = window.location.hash.replace('#', '') || 'home';
       this.navigateTo(hash);
 
+      this.updateBackendStatusUI();
       this.refreshIcons();
     }
 
@@ -1395,8 +1548,27 @@
 
       const targetView = document.getElementById(`view-${viewName}`);
       if (targetView) {
-        targetView.style.display = 'block';
+        targetView.style.display = viewName === 'assistant' ? 'flex' : 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Toggle active class on body for full-height assistant mode
+      if (viewName === 'assistant') {
+        document.body.classList.add('view-assistant-active');
+        this.renderAIChips();
+        setTimeout(() => {
+          document.getElementById('chat-user-input')?.focus();
+          const chatContainer = document.getElementById('chat-messages-container');
+          if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 80);
+      } else {
+        document.body.classList.remove('view-assistant-active');
+      }
+
+      // Hide floating assistant button when already in assistant view
+      const floatBtn = document.getElementById('floating-chat-btn');
+      if (floatBtn) {
+        floatBtn.style.display = viewName === 'assistant' ? 'none' : 'flex';
       }
 
       this.refreshIcons();
@@ -1422,7 +1594,46 @@
         this.renderChecklist();
       }
 
+      this.updateBackendStatusUI();
       this.refreshIcons();
+    }
+
+    async updateBackendStatusUI() {
+      const badge = document.getElementById('ai-backend-status');
+      const textEl = document.getElementById('ai-backend-status-text');
+      if (!badge || !textEl) return;
+
+      badge.className = 'ai-status-badge';
+      textEl.textContent = this.currentLang === 'ta' ? 'இணைக்கப்படுகிறது...' : 'Checking Backend...';
+
+      const health = await this.aiAssistant.checkBackendHealth();
+      if (health && this.aiAssistant.isBackendOnline) {
+        badge.classList.remove('local');
+        badge.classList.add('online');
+        const provider = health.llm_available ? (health.llm_provider.toUpperCase()) : 'FASTAPI';
+        textEl.textContent = this.currentLang === 'ta' 
+          ? `AI சர்வர் இணைக்கப்பட்டது (${provider})` 
+          : `AI Backend Active (${provider})`;
+        // Refresh prompt chips with backend suggestions if available
+        this.renderAIChips();
+      } else {
+        badge.classList.remove('online');
+        badge.classList.add('local');
+        textEl.textContent = this.currentLang === 'ta' ? 'உள்ளமை AI இயந்திரம்' : 'Browser AI Engine';
+      }
+    }
+
+    clearChat() {
+      this.aiAssistant.clearHistory();
+      const container = document.getElementById('chat-messages-container');
+      if (!container) return;
+      const isTamil = this.currentLang === 'ta';
+      const welcome = isTamil 
+        ? 'வணக்கம்! நான் DocMate AI உதவியாளர். அரசு ஆவணங்கள் மற்றும் சான்றிதழ் நடைமுறைகள் குறித்து ஏதேனும் சந்தேகங்கள் இருந்தால் என்னிடம் தாராளமாகக் கேட்கலாம்.'
+        : 'Hello! I am DocMate Assistant, your guide for government document checklists. How can I assist you with your application today?';
+      container.innerHTML = `<div class="chat-bubble assistant"><span>${welcome}</span></div>`;
+      this.renderAIChips();
+      document.getElementById('chat-user-input')?.focus();
     }
 
     applyLanguage(lang) {
@@ -1886,11 +2097,11 @@
       });
     }
 
-    renderAIChips() {
+    async renderAIChips() {
       const container = document.getElementById('quick-prompt-chips');
       if (!container) return;
 
-      const suggestions = this.aiAssistant.getSuggestions();
+      const suggestions = await this.aiAssistant.getSuggestions();
       container.innerHTML = suggestions.map(s => `
         <button type="button" class="prompt-chip" data-prompt="${s}">${s}</button>
       `).join('');
@@ -1908,8 +2119,17 @@
 
       const chatContainer = document.getElementById('chat-messages-container');
       const inputField = document.getElementById('chat-user-input');
-      
-      if (inputField) inputField.value = '';
+      const submitBtn = document.getElementById('chat-submit-btn');
+
+      const originalBtnHTML = submitBtn ? submitBtn.innerHTML : '';
+      if (inputField) {
+        inputField.value = '';
+        inputField.disabled = true;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+      }
 
       const userBubble = document.createElement('div');
       userBubble.className = 'chat-bubble user';
@@ -1919,39 +2139,90 @@
 
       const typingBubble = document.createElement('div');
       typingBubble.className = 'chat-bubble typing';
-      typingBubble.innerHTML = `<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;vertical-align:middle;"></i> DocMate AI is thinking...`;
+      typingBubble.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><span>⏳</span> ${this.currentLang === 'ta' ? 'DocMate AI யோசித்து பதிலளிக்கிறது...' : 'DocMate AI is thinking...'}</span>`;
       chatContainer.appendChild(typingBubble);
       chatContainer.scrollTop = chatContainer.scrollHeight;
-      this.refreshIcons();
 
-      const response = await this.aiAssistant.processQuery(userText);
-      typingBubble.remove();
+      try {
+        const response = await this.aiAssistant.processQuery(userText, this.userContext);
+        typingBubble.remove();
 
-      const assistantBubble = document.createElement('div');
-      assistantBubble.className = 'chat-bubble assistant';
-      assistantBubble.innerHTML = this.formatMarkdown(response.text);
+        const assistantBubble = document.createElement('div');
+        assistantBubble.className = 'chat-bubble assistant';
+        assistantBubble.innerHTML = this.formatMarkdown(response.text);
 
-      if (response.followUp) {
-        const followUpDiv = document.createElement('div');
-        followUpDiv.style.marginTop = '12px';
-        followUpDiv.style.paddingTop = '10px';
-        followUpDiv.style.borderTop = '1px solid var(--neutral-200)';
-        followUpDiv.style.fontSize = '0.85rem';
-        followUpDiv.style.fontWeight = '600';
-        followUpDiv.style.color = 'var(--primary)';
-        followUpDiv.innerHTML = `💡 Follow-up: ${response.followUp}`;
-        assistantBubble.appendChild(followUpDiv);
+        // Interactive Action Buttons (e.g. Open Service Checklist)
+        if (response.actionChips && response.actionChips.length > 0) {
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'chat-actions-container';
+          response.actionChips.forEach(chip => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'chat-action-btn';
+            btn.textContent = chip.label;
+            btn.addEventListener('click', () => {
+              if (chip.action === 'open_service' && chip.serviceId) {
+                this.selectService(chip.serviceId);
+                this.navigateTo('checklist');
+              }
+            });
+            actionsDiv.appendChild(btn);
+          });
+          assistantBubble.appendChild(actionsDiv);
+        }
+
+        // Interactive Clickable Follow-up
+        if (response.followUp) {
+          const followUpDiv = document.createElement('div');
+          followUpDiv.className = 'followup-box';
+          followUpDiv.title = this.currentLang === 'ta' ? 'இந்த கேள்வியை கேட்க கிளிக் செய்யவும்' : 'Click to ask this question';
+          followUpDiv.innerHTML = `<span>💡 ${response.followUp}</span> <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>`;
+          followUpDiv.addEventListener('click', () => {
+            this.sendChatMessage(response.followUp);
+          });
+          assistantBubble.appendChild(followUpDiv);
+        }
+
+        // Source Tag
+        const sourceLabel = response.source === 'gemini-llm' ? '✨ Gemini AI' :
+          (response.source === 'openai-llm' ? '✨ OpenAI' :
+          (response.source === 'docmate-expert-system' ? '⚡ DocMate Expert Engine' : '💻 Browser Engine'));
+        const sourceTag = document.createElement('div');
+        sourceTag.className = 'chat-source-tag';
+        sourceTag.textContent = `Source: ${sourceLabel}`;
+        assistantBubble.appendChild(sourceTag);
+
+        chatContainer.appendChild(assistantBubble);
+      } catch (err) {
+        console.error('Chat error:', err);
+        typingBubble.remove();
+        const errBubble = document.createElement('div');
+        errBubble.className = 'chat-bubble assistant';
+        errBubble.textContent = this.currentLang === 'ta'
+          ? 'மன்னிக்கவும், பதிலை பெறுவதில் பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.'
+          : 'Sorry, there was an error processing your query. Please try again.';
+        chatContainer.appendChild(errBubble);
+      } finally {
+        if (inputField) {
+          inputField.disabled = false;
+          inputField.focus();
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+          submitBtn.innerHTML = originalBtnHTML;
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        this.refreshIcons();
       }
-
-      chatContainer.appendChild(assistantBubble);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      this.refreshIcons();
     }
 
     formatMarkdown(text) {
+      if (!text) return '';
       return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
         .replace(/\n/g, '<br>');
     }
 
@@ -2124,6 +2395,10 @@
         e.preventDefault();
         const input = document.getElementById('chat-user-input');
         if (input) this.sendChatMessage(input.value);
+      });
+
+      document.getElementById('clear-chat-btn')?.addEventListener('click', () => {
+        this.clearChat();
       });
 
       document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
